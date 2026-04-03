@@ -11,50 +11,61 @@ class AuthController extends Controller
 {
     //  Register
     public function register(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:6'
-        ]);
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users',
+        'password' => 'required|min:6'
+    ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+    $user = User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+    ]);
 
-        $token = $user->createToken('api_token')->plainTextToken;
+    //  INVIA EMAIL VERIFICA
+    $user->sendEmailVerificationNotification();
 
-        return response()->json([
-            'user' => $user,
-            'token' => $token
-        ]);
-    }
+    $token = $user->createToken('api_token')->plainTextToken;
+
+    return response()->json([
+        'message' => 'Registered successfully. Please verify your email.',
+        'user' => $user,
+        'token' => $token
+    ]);
+}
 
     //  Login
     public function login(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
-        ]);
+{
+    $request->validate([
+        'email' => 'required|email',
+        'password' => 'required'
+    ]);
 
-        $user = User::where('email', $request->email)->first();
+    $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'message' => 'Invalid credentials'
-            ], 401);
-        }
-
-        $token = $user->createToken('api_token')->plainTextToken;
-
+    if (!$user || !Hash::check($request->password, $user->password)) {
         return response()->json([
-            'user' => $user,
-            'token' => $token
-        ]);
+            'message' => 'Invalid credentials'
+        ], 401);
     }
+
+    //  BLOCCO SE NON VERIFICATO
+    if (!$user->hasVerifiedEmail()) {
+        return response()->json([
+            'message' => 'Email not verified. Please check your inbox.'
+        ], 403);
+    }
+
+    $token = $user->createToken('api_token')->plainTextToken;
+
+    return response()->json([
+        'user' => $user,
+        'token' => $token
+    ]);
+}
 
     //  Logout
     public function logout(Request $request)

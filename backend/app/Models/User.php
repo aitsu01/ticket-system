@@ -10,6 +10,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+
+
 use Laravel\Sanctum\HasApiTokens;
 
 
@@ -20,7 +24,7 @@ use Laravel\Sanctum\HasApiTokens;
 #[Hidden(['password', 'remember_token'])]
 
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable, HasApiTokens;
 
@@ -59,6 +63,10 @@ class User extends Authenticatable
     {
         return $this->role === 'agent';
     }
+
+    
+
+
 
    
 }
