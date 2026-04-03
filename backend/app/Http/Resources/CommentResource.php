@@ -7,14 +7,16 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class CommentResource extends JsonResource
 {
-    public function toArray(Request $request): array
-    {
-        return [
-            'id' => $this->id,
-            'message' => $this->message,
-            'created_at' => $this->created_at,
+    public function toArray($request)
+{
+    return [
+        'id' => $this->id,
+        'message' => $this->message,
 
-            'user' => new UserResource($this->whenLoaded('user')),
-        ];
-    }
+        'user' => [
+            'id' => $this->user->id,
+            'name' => $this->user->name,
+        ],
+    ];
+}
 }

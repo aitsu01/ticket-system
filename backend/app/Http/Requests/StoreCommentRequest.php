@@ -10,13 +10,13 @@ class StoreCommentRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return true; //  per ora permettiamo tutto
     }
 
     public function rules(): array
     {
         return [
-            'message' => 'required|string|max:2000',
+            'message' => 'required|string|min:2|max:1000',
         ];
     }
 }

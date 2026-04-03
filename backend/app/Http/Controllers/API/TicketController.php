@@ -40,14 +40,21 @@ class TicketController extends Controller
     return new TicketResource($ticket);
 }
 
-  public function show(Ticket $ticket)
+
+
+
+
+
+
+public function show(Ticket $ticket)
 {
-    $this->authorize('view', $ticket);
-
-    $ticket->load(['user', 'agent', 'comments.user']);
-
-    return new TicketResource($ticket);
+    return new TicketResource(
+        $ticket->load(['user', 'comments.user'])
+    );
 }
+
+
+
  public function update(UpdateTicketRequest $request, Ticket $ticket)
 {
     $this->authorize('update', $ticket);

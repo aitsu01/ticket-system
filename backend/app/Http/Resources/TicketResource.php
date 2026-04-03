@@ -21,15 +21,18 @@ class TicketResource extends JsonResource
             'created_at' => $this->created_at,
 
             //  creator
-            'user' => new UserResource($this->whenLoaded('user')),
+            /*'user' => new UserResource($this->whenLoaded('user')),*/
+            'user' => ['id' => $this->user->id,
+    'name' => $this->user->name,
+],
+    
 
             //  agent
             'agent' => new UserResource($this->whenLoaded('agent')),
 
             //  commenti
-            'comments' => CommentResource::collection(
-                $this->whenLoaded('comments')
-            ),
+           
+            'comments' => CommentResource::collection($this->comments),
         ];
     }
 }

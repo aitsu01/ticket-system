@@ -5,6 +5,15 @@ import Register from "../views/Register.vue";
 import ForgotPassword from "../views/ForgotPassword.vue";
 import EmailVerified from "../views/EmailVerified.vue";
 import ResetPassword from "../views/ResetPassword.vue";
+import Tickets from "../views/Tickets.vue";
+import CreateTicket from "../views/CreateTicket.vue";
+import TicketDetail from "../views/TicketDetail.vue";
+
+
+
+
+
+
 
 
 
@@ -24,6 +33,18 @@ const routes = [
 
   { path: "/reset-password", 
     component: ResetPassword },
+
+  { path: "/tickets",
+    component: Tickets, 
+    meta: { requiresAuth: true } },
+
+  { path: "/tickets/create", 
+    component: CreateTicket, 
+    meta: { requiresAuth: true } },
+
+  { path: "/tickets/:id", 
+    component: TicketDetail,
+     meta: { requiresAuth: true } },
 
 
 ];

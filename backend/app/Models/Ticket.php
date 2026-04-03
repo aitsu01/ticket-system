@@ -22,10 +22,12 @@ class Ticket extends Model
     ];
 
     //  Creator (utente che crea ticket)
+   
+
     public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
+{
+    return $this->belongsTo(User::class);
+}
 
     //  Agent assegnato
     public function agent()
@@ -33,11 +35,12 @@ class Ticket extends Model
         return $this->belongsTo(User::class, 'assigned_to');
     }
 
-    //  Commenti
+    //  Commentipublic function comments()
     public function comments()
-    {
-        return $this->hasMany(Comment::class);
-    }
+{
+    return $this->hasMany(Comment::class);
+}
+
 
     //  Helper status (molto utili dopo)
     public function isOpen()
