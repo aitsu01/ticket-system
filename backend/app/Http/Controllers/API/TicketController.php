@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 use App\Services\TicketService;
 use App\Http\Controllers\Controller;
 
+use App\Http\Requests\StoreTicketRequest;
+use App\Http\Requests\UpdateTicketRequest;
+
+use App\Http\Resources\TicketResource;
+
 class TicketController extends Controller
 {
     protected $service;
@@ -17,33 +22,45 @@ class TicketController extends Controller
     }
 
     public function index()
-    {
-        return Ticket::with(['user', 'agent'])->latest()->get();
-    }
+{
+    $tickets = Ticket::with(['user', 'agent'])->latest()->get();
 
-    public function store(Request $request)
-    {
-        $ticket = $this->service->create($request->all());
+    return TicketResource::collection($tickets);
+}
 
-        return response()->json($ticket, 201);
-    }
+    public function store(StoreTicketRequest $request)
+{
+    $data = $request->validated();
 
-    public function show(Ticket $ticket)
-    {
-        return $ticket->load(['user', 'agent', 'comments.user']);
-    }
+    $data['user_id'] = auth()->id();
 
-    public function update(Request $request, Ticket $ticket)
-    {
-        $ticket = $this->service->update($ticket, $request->all());
+    $ticket = $this->service->create($data);
 
-        return response()->json($ticket);
-    }
+    /*return response()->json($ticket, 201);*/
+    return new TicketResource($ticket);
+}
+
+  public function show(Ticket $ticket)
+{
+    $this->authorize('view', $ticket);
+
+    $ticket->load(['user', 'agent', 'comments.user']);
+
+    return new TicketResource($ticket);
+}
+ public function update(UpdateTicketRequest $request, Ticket $ticket)
+{
+    $this->authorize('update', $ticket);
+
+    return $this->service->update($ticket, $request->validated());
+}
 
     public function destroy(Ticket $ticket)
-    {
-        $ticket->delete();
+{
+    $this->authorize('delete', $ticket);
 
-        return response()->json(['message' => 'Deleted']);
-    }
+    $ticket->delete();
+
+    return response()->json(['message' => 'Deleted']);
+}
 }
