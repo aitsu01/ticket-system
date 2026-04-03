@@ -1,52 +1,41 @@
 import { createRouter, createWebHistory } from "vue-router";
+
+//  AUTH PAGES
 import Login from "../views/Login.vue";
-import Dashboard from "../views/Dashboard.vue";
 import Register from "../views/Register.vue";
 import ForgotPassword from "../views/ForgotPassword.vue";
-import EmailVerified from "../views/EmailVerified.vue";
 import ResetPassword from "../views/ResetPassword.vue";
+import EmailVerified from "../views/EmailVerified.vue";
+
+//  LAYOUT
+import AppLayout from "../layouts/AppLayout.vue";
+
+//  APP PAGES
+import Dashboard from "../views/Dashboard.vue";
 import Tickets from "../views/Tickets.vue";
 import CreateTicket from "../views/CreateTicket.vue";
 import TicketDetail from "../views/TicketDetail.vue";
 
-
-
-
-
-
-
-
-
-
 const routes = [
+  //  PUBLIC
   { path: "/", component: Login },
   { path: "/register", component: Register },
   { path: "/forgot-password", component: ForgotPassword },
+  { path: "/reset-password", component: ResetPassword },
+  { path: "/email-verified", component: EmailVerified },
 
+  //  PROTECTED (CON LAYOUT)
   {
-    path: "/dashboard",
-    component: Dashboard,
+    path: "/",
+    component: AppLayout,
     meta: { requiresAuth: true },
+    children: [
+      { path: "dashboard", component: Dashboard },
+      { path: "tickets", component: Tickets },
+      { path: "tickets/create", component: CreateTicket },
+      { path: "tickets/:id", component: TicketDetail },
+    ],
   },
-  { path: "/email-verified", 
-    component: EmailVerified },
-
-  { path: "/reset-password", 
-    component: ResetPassword },
-
-  { path: "/tickets",
-    component: Tickets, 
-    meta: { requiresAuth: true } },
-
-  { path: "/tickets/create", 
-    component: CreateTicket, 
-    meta: { requiresAuth: true } },
-
-  { path: "/tickets/:id", 
-    component: TicketDetail,
-     meta: { requiresAuth: true } },
-
-
 ];
 
 const router = createRouter({
@@ -54,6 +43,7 @@ const router = createRouter({
   routes,
 });
 
+//  AUTH GUARD
 router.beforeEach((to) => {
   const token = localStorage.getItem("token");
 

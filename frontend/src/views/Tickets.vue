@@ -56,11 +56,21 @@
         class="bg-white p-4 rounded shadow flex justify-between items-center hover:shadow-md transition"
       >
         <div>
-          <h2 class="font-bold">{{ ticket.title }}</h2>
 
-          <p :class="statusClass(ticket.status)" class="text-sm">
-            {{ ticket.status }}
-          </p>
+
+          <h2 class="font-bold">
+  {{ ticket.ticket_number }} — {{ ticket.title }}
+</h2>
+
+<p class="text-xs text-gray-400">
+  Created: {{ ticket.created_at }}
+</p>
+
+<p :class="statusClass(ticket.status)" class="text-sm">
+  {{ ticket.status }}
+</p>
+
+
         </div>
 
         <button

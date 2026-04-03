@@ -18,7 +18,10 @@ class TicketResource extends JsonResource
             'status' => $this->status,
             'priority' => $this->priority,
 
-            'created_at' => $this->created_at,
+            /*'created_at' => $this->created_at,*/
+
+            'ticket_number' => '#' . $this->id,
+            'created_at' => $this->created_at->format('d/m/Y H:i'),
 
             //  creator
             /*'user' => new UserResource($this->whenLoaded('user')),*/

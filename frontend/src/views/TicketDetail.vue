@@ -20,8 +20,16 @@
     <div v-if="ticket" class="max-w-2xl mx-auto bg-white p-6 rounded shadow">
 
       <!-- HEADER -->
+
+
       <div class="mb-4">
-  <h1 class="text-2xl font-bold">{{ ticket.title }}</h1>
+  <h1 class="text-2xl font-bold">
+  {{ ticket.ticket_number }} — {{ ticket.title }}
+</h1>
+
+<p class="text-xs text-gray-400">
+  Created: {{ ticket.created_at }}
+</p>
 
   <!--  CREATOR -->
   <p class="text-sm text-gray-400">
