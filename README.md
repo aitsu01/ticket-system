@@ -1,4 +1,4 @@
-# 🎫 Ticket Management System
+#  Ticket Management System
 
 A modern full-stack helpdesk application built with **Laravel 13 + Vue 3**.
 
