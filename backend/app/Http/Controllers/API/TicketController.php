@@ -29,23 +29,30 @@ class TicketController extends Controller
     /*if ($request->search) {
         $query->where('title', 'like', '%' . $request->search . '%');
     }*/
-    if ($request->search) {
-    $search = $request->search;
+
+    if ($request->filled('search')) {
+
+    $search = trim($request->search);
 
     $query->where(function ($q) use ($search) {
 
-        //  titolo
+        //  testo
         $q->where('title', 'like', "%{$search}%")
-
-          //  descrizione
           ->orWhere('description', 'like', "%{$search}%");
 
-        //  ticket number (#123)
-        if (preg_match('/#?(\d+)/', $search, $matches)) {
-            $q->orWhere('id', $matches[1]);
+        //  numero puro
+        if (is_numeric(str_replace('#', '', $search))) {
+            $id = (int) str_replace('#', '', $search);
+            $q->orWhere('id', $id);
         }
     });
 }
+   
+
+   
+
+
+
 
     //  STATUS
     if ($request->status) {

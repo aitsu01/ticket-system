@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-100 p-6">
 
-    <!--  HEADER -->
+    <!-- 🔴 HEADER -->
     <div class="flex justify-between items-center mb-6">
 
       <div class="flex items-center gap-4">
@@ -24,20 +24,16 @@
 
     </div>
 
-    <!--  SEARCH -->
+    <!-- 🔍 SEARCH -->
     <div class="mb-4">
-
       <input
-  v-model="search"
-  placeholder="Search by title, description or #ticket"
-  class="w-full p-2 border rounded"
-/>
-
-
-
+        v-model="search"
+        placeholder="Search by title, description or #ticket"
+        class="w-full p-2 border rounded"
+      />
     </div>
 
-    <!--  FILTERS -->
+    <!-- 🎯 FILTERS -->
     <div class="flex gap-2 mb-4 flex-wrap">
 
       <select v-model="statusFilter" class="border p-2 rounded">
@@ -64,7 +60,6 @@
         Assigned to Me
       </button>
 
-      <!-- RESET -->
       <button
         @click="resetFilters"
         class="bg-red-400 text-white px-3 py-2 rounded"
@@ -74,18 +69,18 @@
 
     </div>
 
-    <!--  LOADING -->
+    <!-- ⏳ LOADING -->
     <div v-if="loading" class="text-center text-gray-500">
       Loading...
     </div>
 
-    <!--  ERROR -->
+    <!-- ❌ ERROR -->
     <div v-if="error" class="text-center text-red-500">
       {{ error }}
     </div>
 
-    <!--  LIST -->
-    <div v-if="filteredTickets.length" class="space-y-4">
+    <!-- 📋 LIST -->
+    <div v-if="tickets.length" class="space-y-4">
 
       <div
         v-for="ticket in tickets"
@@ -99,7 +94,7 @@
           </h2>
 
           <p class="text-xs text-gray-400">
-            Created: {{ ticket.created_at }} •  {{ ticket.user?.name || 'N/A' }}
+            Created: {{ ticket.created_at }} • 👤 {{ ticket.user?.name || 'N/A' }}
           </p>
 
           <p :class="statusClass(ticket.status)" class="text-sm mt-1">
@@ -120,20 +115,16 @@
 
     <!-- EMPTY -->
     <div v-else class="text-center text-gray-400">
-      No tickets match your filters
+      No tickets found
     </div>
 
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, watch } from "vue";
 import api from "../services/api";
 import { useRouter } from "vue-router";
-
-import { watch } from "vue";
-
-
 
 const router = useRouter();
 
@@ -147,13 +138,13 @@ const myTickets = ref(false);
 const assignedToMe = ref(false);
 const currentUser = ref(null);
 
-//  FETCH USER
+// 👤 FETCH USER
 const fetchUser = async () => {
   const res = await api.get("/me");
   currentUser.value = res.data;
 };
 
-//  FETCH TICKETS
+// 📦 FETCH TICKETS (BACKEND FILTER)
 const fetchTickets = async () => {
   loading.value = true;
 
@@ -181,7 +172,7 @@ onMounted(async () => {
   await fetchTickets();
 });
 
-//  TOGGLES
+// 🔘 TOGGLES
 const toggleMyTickets = () => {
   myTickets.value = !myTickets.value;
 };
@@ -190,7 +181,7 @@ const toggleAssigned = () => {
   assignedToMe.value = !assignedToMe.value;
 };
 
-//  RESET
+// 🔄 RESET
 const resetFilters = () => {
   search.value = "";
   statusFilter.value = "";
@@ -198,42 +189,15 @@ const resetFilters = () => {
   assignedToMe.value = false;
 };
 
-//  FILTER LOGIC (COMBINATA)
-const filteredTickets = computed(() => {
-  let result = tickets.value;
-
-  //  SEARCH
-  if (search.value) {
-    result = result.filter(ticket =>
-      ticket.title.toLowerCase().includes(search.value.toLowerCase())
-    );
+// 👀 WATCH → AUTO SEARCH
+watch(
+  [search, statusFilter, myTickets, assignedToMe],
+  () => {
+    fetchTickets();
   }
+);
 
-  //  STATUS
-  if (statusFilter.value) {
-    result = result.filter(ticket =>
-      ticket.status === statusFilter.value
-    );
-  }
-
-  //  MY TICKETS
-  if (myTickets.value && currentUser.value) {
-    result = result.filter(ticket =>
-      ticket.user?.id === currentUser.value.id
-    );
-  }
-
-  //  ASSIGNED
-  if (assignedToMe.value && currentUser.value) {
-    result = result.filter(ticket =>
-      ticket.agent?.id === currentUser.value.id
-    );
-  }
-
-  return result;
-});
-
-//  STATUS COLOR
+// 🎨 STATUS COLOR
 const statusClass = (status) => {
   switch (status) {
     case "open": return "text-blue-500 font-semibold";
@@ -244,7 +208,7 @@ const statusClass = (status) => {
   }
 };
 
-//  NAV
+// 📌 NAV
 const viewTicket = (id) => {
   router.push(`/tickets/${id}`);
 };
@@ -252,11 +216,4 @@ const viewTicket = (id) => {
 const goCreate = () => {
   router.push("/tickets/create");
 };
-
-watch(
-  [search, statusFilter, myTickets, assignedToMe],
-  () => {
-    fetchTickets();
-  }
-);
 </script>
