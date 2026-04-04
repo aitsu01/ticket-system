@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-100 flex flex-col">
 
-    <!-- 🔝 NAVBAR -->
+    <!--  NAVBAR -->
     <div class="flex justify-between items-center p-4 bg-white shadow">
       <h1 class="font-bold text-lg">Ticket System</h1>
 
@@ -20,7 +20,7 @@
       </div>
     </div>
 
-    <!-- 🚀 HERO -->
+    <!--  HERO -->
     <div class="flex flex-1 items-center justify-center text-center px-4">
       <div class="max-w-xl">
 
@@ -51,7 +51,7 @@
       </div>
     </div>
 
-    <!-- 📊 FEATURES -->
+    <!--  FEATURES -->
     <div class="bg-white py-10">
       <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
 
