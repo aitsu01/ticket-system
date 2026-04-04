@@ -21,9 +21,48 @@ class TicketController extends Controller
         $this->service = $service;
     }
 
-    public function index()
+    public function index(Request $request)
 {
-    $tickets = Ticket::with(['user', 'agent'])->latest()->get();
+    $query = Ticket::query()->with(['user', 'agent']);
+
+    //  SEARCH
+    /*if ($request->search) {
+        $query->where('title', 'like', '%' . $request->search . '%');
+    }*/
+    if ($request->search) {
+    $search = $request->search;
+
+    $query->where(function ($q) use ($search) {
+
+        //  titolo
+        $q->where('title', 'like', "%{$search}%")
+
+          //  descrizione
+          ->orWhere('description', 'like', "%{$search}%");
+
+        //  ticket number (#123)
+        if (preg_match('/#?(\d+)/', $search, $matches)) {
+            $q->orWhere('id', $matches[1]);
+        }
+    });
+}
+
+    //  STATUS
+    if ($request->status) {
+        $query->where('status', $request->status);
+    }
+
+    //  MY TICKETS
+    if ($request->my_tickets) {
+        $query->where('user_id', auth()->id());
+    }
+
+    //  ASSIGNED TO ME
+    if ($request->assigned_to_me) {
+        $query->where('assigned_to', auth()->id());
+    }
+
+    $tickets = $query->latest()->get();
 
     return TicketResource::collection($tickets);
 }

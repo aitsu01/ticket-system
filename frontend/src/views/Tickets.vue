@@ -26,11 +26,15 @@
 
     <!--  SEARCH -->
     <div class="mb-4">
+
       <input
-        v-model="search"
-        placeholder="Search tickets..."
-        class="w-full p-2 border rounded"
-      />
+  v-model="search"
+  placeholder="Search by title, description or #ticket"
+  class="w-full p-2 border rounded"
+/>
+
+
+
     </div>
 
     <!--  FILTERS -->
@@ -84,7 +88,7 @@
     <div v-if="filteredTickets.length" class="space-y-4">
 
       <div
-        v-for="ticket in filteredTickets"
+        v-for="ticket in tickets"
         :key="ticket.id"
         class="bg-white p-4 rounded shadow hover:shadow-md transition flex justify-between items-center"
       >
@@ -127,6 +131,10 @@ import { ref, onMounted, computed } from "vue";
 import api from "../services/api";
 import { useRouter } from "vue-router";
 
+import { watch } from "vue";
+
+
+
 const router = useRouter();
 
 const tickets = ref([]);
@@ -147,9 +155,20 @@ const fetchUser = async () => {
 
 //  FETCH TICKETS
 const fetchTickets = async () => {
+  loading.value = true;
+
   try {
-    const res = await api.get("/tickets");
+    const res = await api.get("/tickets", {
+      params: {
+        search: search.value,
+        status: statusFilter.value,
+        my_tickets: myTickets.value ? 1 : 0,
+        assigned_to_me: assignedToMe.value ? 1 : 0,
+      }
+    });
+
     tickets.value = res.data.data;
+
   } catch (e) {
     error.value = "Failed to load tickets";
   } finally {
@@ -233,4 +252,11 @@ const viewTicket = (id) => {
 const goCreate = () => {
   router.push("/tickets/create");
 };
+
+watch(
+  [search, statusFilter, myTickets, assignedToMe],
+  () => {
+    fetchTickets();
+  }
+);
 </script>
