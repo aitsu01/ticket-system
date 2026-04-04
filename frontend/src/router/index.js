@@ -6,6 +6,9 @@ import Register from "../views/Register.vue";
 import ForgotPassword from "../views/ForgotPassword.vue";
 import ResetPassword from "../views/ResetPassword.vue";
 import EmailVerified from "../views/EmailVerified.vue";
+import Home from "../views/Home.vue";
+
+
 
 //  LAYOUT
 import AppLayout from "../layouts/AppLayout.vue";
@@ -17,8 +20,9 @@ import CreateTicket from "../views/CreateTicket.vue";
 import TicketDetail from "../views/TicketDetail.vue";
 
 const routes = [
+  { path: "/", component: Home },
   //  PUBLIC
-  { path: "/", component: Login },
+  { path: "/login", component: Login },
   { path: "/register", component: Register },
   { path: "/forgot-password", component: ForgotPassword },
   { path: "/reset-password", component: ResetPassword },
