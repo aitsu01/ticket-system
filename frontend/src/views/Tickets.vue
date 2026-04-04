@@ -4,7 +4,6 @@
     <!--  HEADER -->
     <div class="flex justify-between items-center mb-6">
 
-      <!-- LEFT -->
       <div class="flex items-center gap-4">
         <button
           @click="router.push('/dashboard')"
@@ -16,21 +15,57 @@
         <h1 class="text-2xl font-bold">Tickets</h1>
       </div>
 
-      <!--  SEARCH -->
-<div class="mb-4">
-  <input
-    v-model="search"
-    placeholder="Search tickets..."
-    class="w-full p-2 border rounded"
-  />
-</div>
-
-      <!-- RIGHT -->
       <button
         @click="goCreate"
         class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition"
       >
         + New Ticket
+      </button>
+
+    </div>
+
+    <!--  SEARCH -->
+    <div class="mb-4">
+      <input
+        v-model="search"
+        placeholder="Search tickets..."
+        class="w-full p-2 border rounded"
+      />
+    </div>
+
+    <!--  FILTERS -->
+    <div class="flex gap-2 mb-4 flex-wrap">
+
+      <select v-model="statusFilter" class="border p-2 rounded">
+        <option value="">All Status</option>
+        <option value="open">Open</option>
+        <option value="in_progress">In Progress</option>
+        <option value="resolved">Resolved</option>
+        <option value="closed">Closed</option>
+      </select>
+
+      <button
+        @click="toggleMyTickets"
+        :class="myTickets ? 'bg-blue-500 text-white' : 'bg-gray-200'"
+        class="px-3 py-2 rounded"
+      >
+        My Tickets
+      </button>
+
+      <button
+        @click="toggleAssigned"
+        :class="assignedToMe ? 'bg-green-500 text-white' : 'bg-gray-200'"
+        class="px-3 py-2 rounded"
+      >
+        Assigned to Me
+      </button>
+
+      <!-- RESET -->
+      <button
+        @click="resetFilters"
+        class="bg-red-400 text-white px-3 py-2 rounded"
+      >
+        Reset
       </button>
 
     </div>
@@ -46,7 +81,7 @@
     </div>
 
     <!--  LIST -->
-    <div v-if="tickets.length" class="space-y-4">
+    <div v-if="filteredTickets.length" class="space-y-4">
 
       <div
         v-for="ticket in filteredTickets"
@@ -55,24 +90,20 @@
       >
         <div>
 
-          <!-- TITLE -->
           <h2 class="font-bold">
             {{ ticket.ticket_number }} — {{ ticket.title }}
           </h2>
 
-          <!-- META -->
           <p class="text-xs text-gray-400">
             Created: {{ ticket.created_at }} •  {{ ticket.user?.name || 'N/A' }}
           </p>
 
-          <!-- STATUS -->
           <p :class="statusClass(ticket.status)" class="text-sm mt-1">
             {{ ticket.status }}
           </p>
 
         </div>
 
-        <!-- ACTION -->
         <button
           @click="viewTicket(ticket.id)"
           class="text-blue-500 hover:underline"
@@ -84,28 +115,38 @@
     </div>
 
     <!-- EMPTY -->
-
-
-    <div v-if="!filteredTickets.length" class="text-center text-gray-400">
-  No tickets match your search
-</div>
+    <div v-else class="text-center text-gray-400">
+      No tickets match your filters
+    </div>
 
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import api from "../services/api";
 import { useRouter } from "vue-router";
-import { computed } from "vue";
 
-const search = ref("");
 const router = useRouter();
+
 const tickets = ref([]);
 const loading = ref(true);
 const error = ref(null);
 
-onMounted(async () => {
+const search = ref("");
+const statusFilter = ref("");
+const myTickets = ref(false);
+const assignedToMe = ref(false);
+const currentUser = ref(null);
+
+//  FETCH USER
+const fetchUser = async () => {
+  const res = await api.get("/me");
+  currentUser.value = res.data;
+};
+
+//  FETCH TICKETS
+const fetchTickets = async () => {
   try {
     const res = await api.get("/tickets");
     tickets.value = res.data.data;
@@ -114,8 +155,77 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
+};
+
+onMounted(async () => {
+  await fetchUser();
+  await fetchTickets();
 });
 
+//  TOGGLES
+const toggleMyTickets = () => {
+  myTickets.value = !myTickets.value;
+};
+
+const toggleAssigned = () => {
+  assignedToMe.value = !assignedToMe.value;
+};
+
+//  RESET
+const resetFilters = () => {
+  search.value = "";
+  statusFilter.value = "";
+  myTickets.value = false;
+  assignedToMe.value = false;
+};
+
+//  FILTER LOGIC (COMBINATA)
+const filteredTickets = computed(() => {
+  let result = tickets.value;
+
+  //  SEARCH
+  if (search.value) {
+    result = result.filter(ticket =>
+      ticket.title.toLowerCase().includes(search.value.toLowerCase())
+    );
+  }
+
+  //  STATUS
+  if (statusFilter.value) {
+    result = result.filter(ticket =>
+      ticket.status === statusFilter.value
+    );
+  }
+
+  //  MY TICKETS
+  if (myTickets.value && currentUser.value) {
+    result = result.filter(ticket =>
+      ticket.user?.id === currentUser.value.id
+    );
+  }
+
+  //  ASSIGNED
+  if (assignedToMe.value && currentUser.value) {
+    result = result.filter(ticket =>
+      ticket.agent?.id === currentUser.value.id
+    );
+  }
+
+  return result;
+});
+
+//  STATUS COLOR
+const statusClass = (status) => {
+  switch (status) {
+    case "open": return "text-blue-500 font-semibold";
+    case "in_progress": return "text-yellow-500 font-semibold";
+    case "resolved": return "text-green-500 font-semibold";
+    case "closed": return "text-gray-500 font-semibold";
+    default: return "text-gray-400";
+  }
+};
+
+//  NAV
 const viewTicket = (id) => {
   router.push(`/tickets/${id}`);
 };
@@ -123,31 +233,4 @@ const viewTicket = (id) => {
 const goCreate = () => {
   router.push("/tickets/create");
 };
-
-const statusClass = (status) => {
-  switch (status) {
-    case "open":
-      return "text-blue-500 font-semibold";
-    case "in_progress":
-      return "text-yellow-500 font-semibold";
-    case "resolved":
-      return "text-green-500 font-semibold";
-    case "closed":
-      return "text-gray-500 font-semibold";
-    default:
-      return "text-gray-400";
-  }
-};
-
-const filteredTickets = computed(() => {
-  if (!search.value) return tickets.value;
-
-  return tickets.value.filter(ticket =>
-    ticket.title.toLowerCase().includes(search.value.toLowerCase())
-  );
-});
-
-
-
-
 </script>
