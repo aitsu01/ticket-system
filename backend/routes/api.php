@@ -6,6 +6,10 @@ use App\Http\Controllers\API\CommentController;
 use App\Http\Controllers\API\DashboardController;
 use App\Http\Controllers\API\AuthController;
 
+use App\Http\Controllers\API\UserController;
+
+
+
 
 
 use App\Models\User;
@@ -121,6 +125,8 @@ Route::post('/reset-password', function (Request $request) {
         : response()->json(['message' => 'Invalid token'], 400);
 });
 
+
+Route::get('/users', [UserController::class, 'index'])->middleware('auth:sanctum');
 
 
 });

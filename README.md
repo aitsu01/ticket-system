@@ -1,19 +1,8 @@
-#  Ticket Management System (Help Desk)
+# 🎫 Ticket System (Laravel + Vue + Tailwind)
 
-A full-stack **Ticket Management System** designed with a scalable, event-driven architecture.
-Built to simulate a real-world support platform used in SaaS applications.
+A modern full-stack ticket management system built with **Laravel 13**, **Vue 3**, and **TailwindCSS**.
 
----
-
-##  Overview
-
-This project provides a **RESTful API backend** for managing support tickets, including authentication, role-based access control, notifications, and analytics.
-
-It follows modern backend best practices:
-
-* Clean architecture
-* Separation of concerns
-* Async processing
+This project simulates a real-world helpdesk / support system with authentication, ticket lifecycle management, and a clean dashboard UI.
 
 ---
 
@@ -21,163 +10,122 @@ It follows modern backend best practices:
 
 ### Backend
 
-* **Laravel 13** (API-first architecture)
-* **Laravel Sanctum** (Token-based authentication)
-* **MySQL**
-* **Queue (Database driver)**
-* Event-driven system (Events & Listeners)
+* Laravel 13 (API-first architecture)
+* Laravel Sanctum (authentication)
+* MySQL
+* Queues & Notifications
+* RESTful API with Resources
 
-### Frontend (in progress)
+### Frontend
 
-* Vue 3 (SPA)
-* Vite
-* Tailwind CSS
-
----
-
-##  Authentication & Authorization
-
-* Token-based authentication via Sanctum
-* Role-based system:
-
-  * **Admin** → full access
-  * **Agent** → manage assigned tickets
-  * **User** → manage own tickets
-
-Authorization handled using **Laravel Policies**
+* Vue 3 (Composition API)
+* Vue Router
+* Axios (API client)
+* TailwindCSS
 
 ---
 
-##  Core Features
+##  Authentication System
 
-### Ticket Management
+Complete authentication flow implemented:
 
-* Create, update, delete tickets
+*  Register
+*  Login
+*  Logout
+*  Email Verification
+*  Resend Verification Email
+*  Forgot Password
+*  Reset Password
+*  Auth Guard (frontend + backend)
+
+---
+
+##  Ticket System Features
+
+### Core Features
+
+* Create tickets
+* View tickets list
+* Ticket detail page
+* Add comments to tickets
 * Assign tickets to agents
-* Change status:
+* Change ticket status
 
-  * open
-  * in_progress
-  * resolved
-  * closed
-* Priority system:
+### Business Rules
 
-  * low, medium, high
+*  Cannot comment on `resolved` or `closed` tickets
+*  Protected API routes with Sanctum
+*  User-based ticket ownership
 
 ---
 
-### Comments System
+##  Dashboard
 
-* Threaded comments per ticket
+* Total tickets
+* Tickets by status
+* Tickets per agent
+
+---
+
+##  Comments System
+
 * Linked to users
-* Real-time updates via events
+* Shows author name
+* Real-time refresh after adding comment
 
 ---
 
-##  Architecture
+##  Ticket Enhancements
 
-### ✔ Service Layer
-
-Business logic is decoupled from controllers for maintainability and scalability.
-
-### ✔ Form Request Validation
-
-Reusable and clean validation logic.
-
-### ✔ API Resources
-
-Consistent and frontend-friendly JSON responses.
-
-### ✔ Policy-Based Authorization
-
-Fine-grained access control per role and ownership.
+* Ticket number (e.g. `#12`)
+* Creation date
+* Status color indicators
 
 ---
 
-##  Event-Driven System
+##  UI / UX
 
-Events are triggered on:
-
-* Ticket assignment
-* Status changes
-* New comments
-
----
-
-##  Notifications
-
-* Implemented using Laravel Notifications
-* Triggered via events
-* Delivered asynchronously
+* Global layout (Navbar + Sidebar)
+* Responsive dashboard layout
+* Clean card-based UI
+* Status color coding
+* Improved navigation flow
 
 ---
 
-##  Queue System
+##  API Structure
 
-* Database-driven queue
-* Background worker processing
-* Non-blocking API responses
+Base URL:
 
----
-
-##  Dashboard API
-
-### Endpoint
-
-```http
-GET /api/v1/dashboard
+```bash
+/api/v1
 ```
 
-### Example Response
+### Example Endpoints
 
-```json
-{
-  "total": 3,
-  "open": 2,
-  "in_progress": 0,
-  "resolved": 1,
-  "closed": 0,
-  "by_agent": [
-    {
-      "agent": "Gianni",
-      "count": 1
-    }
-  ]
-}
+```bash
+POST   /register
+POST   /login
+POST   /logout
+GET    /me
+
+GET    /tickets
+POST   /tickets
+GET    /tickets/{id}
+
+POST   /tickets/{id}/comments
+
+PATCH  /tickets/{id}/status
+PATCH  /tickets/{id}/assign
+
+GET    /dashboard
 ```
 
 ---
 
-##  API Endpoints
+##  Installation
 
-### Authentication
-
-* `POST /api/v1/register`
-* `POST /api/v1/login`
-* `POST /api/v1/logout`
-* `GET /api/v1/me`
-
-### Tickets
-
-* `GET /api/v1/tickets`
-* `POST /api/v1/tickets`
-* `GET /api/v1/tickets/{id}`
-* `PUT /api/v1/tickets/{id}`
-* `DELETE /api/v1/tickets/{id}`
-
-### Comments
-
-* `POST /api/v1/tickets/{ticket}/comments`
-
-### Dashboard
-
-* `GET /api/v1/dashboard`
-
----
-
-## Installation
-
-### 1. Clone repository
+### 1. Clone repo
 
 ```bash
 git clone https://github.com/aitsu01/ticket-system.git
@@ -186,7 +134,7 @@ cd ticket-system
 
 ---
 
-### 2. Backend Setup
+### 2. Backend setup
 
 ```bash
 cd backend
@@ -195,17 +143,14 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-Update `.env`:
+Configure `.env`:
 
-```env
-DB_DATABASE=ticket_system
-DB_USERNAME=root
-DB_PASSWORD=
-```
+* Database
+* Mail (SMTP - Gmail recommended)
 
 ---
 
-### 3. Database
+### 3. Run migrations
 
 ```bash
 php artisan migrate
@@ -213,7 +158,7 @@ php artisan migrate
 
 ---
 
-### 4. Run server
+### 4. Start backend
 
 ```bash
 php artisan serve
@@ -221,46 +166,75 @@ php artisan serve
 
 ---
 
-### 5. Run Queue Worker
+### 5. Frontend setup
 
 ```bash
-php artisan queue:work
+cd ../frontend
+npm install
+npm run dev
 ```
 
 ---
 
-##  Testing Example
+##  Mail Configuration (Example Gmail)
 
-```bash
-curl -X POST http://127.0.0.1:8000/api/v1/login \
--H "Content-Type: application/json" \
--d '{"email":"test@test.com","password":"123456"}'
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your@email.com
+MAIL_PASSWORD=your_app_password
+MAIL_ENCRYPTION=tls
 ```
 
 ---
 
-##  Design Choices
+##  Testing API
 
-* **Laravel** for robust backend and rapid development
-* **Vue 3** for reactive and dynamic UI
-* **Tailwind CSS** for fast and clean styling
-* **Event + Queue architecture** for scalability
+Example with curl:
+
+```bash
+curl -X GET http://127.0.0.1:8000/api/v1/tickets \
+-H "Authorization: Bearer YOUR_TOKEN"
+```
+
+---
+
+##  Architecture Notes
+
+* API-first backend (no Blade)
+* Vue SPA frontend
+* Separation of concerns:
+
+  * Controllers
+  * Services
+  * Resources
+* Scalable structure for real-world apps
 
 ---
 
 ##  Future Improvements
 
-* Frontend dashboard (Vue 3)
-* Real email integration (SMTP)
-* File attachments
-* Advanced filtering & search
-* Pagination
-* Queue monitoring (Laravel Horizon)
-* Docker setup
+*  Ticket search & filters
+*  Role system (admin / agent / user)
+*  Advanced dashboard analytics
+*  Real-time notifications
+*  File attachments
+*  Threaded comments
 
 ---
 
-##  Author
 
-Developed as a full-stack portfolio project to demonstrate modern backend architecture and scalable system design.
+
+##  Why Laravel + Vue + Tailwind?
+
+This stack was chosen to balance:
+
+*  Rapid backend development (Laravel)
+*  Reactive frontend (Vue)
+*  Fast UI styling (Tailwind)
+
+It reflects a modern full-stack approach used in real SaaS products.
+
+---
 

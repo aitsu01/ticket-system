@@ -1,50 +1,45 @@
 <template>
   <div class="min-h-screen bg-gray-100 p-6">
 
-    <!-- BACK -->
+    <!--  BACK -->
     <button @click="router.push('/tickets')" class="mb-4 text-gray-500">
       ← Back
     </button>
 
-    <!-- LOADING -->
+    <!--  LOADING -->
     <div v-if="loading" class="text-center text-gray-500">
       Loading...
     </div>
 
-    <!-- ERROR -->
+    <!--  ERROR -->
     <div v-if="error" class="text-center text-red-500">
       {{ error }}
     </div>
 
-    <!-- CONTENT -->
+    <!--  CONTENT -->
     <div v-if="ticket" class="max-w-2xl mx-auto bg-white p-6 rounded shadow">
 
-      <!-- HEADER -->
-
-
+      <!--  HEADER -->
       <div class="mb-4">
-  <h1 class="text-2xl font-bold">
-  {{ ticket.ticket_number }} — {{ ticket.title }}
-</h1>
+        <h1 class="text-2xl font-bold">
+          {{ ticket.ticket_number }} — {{ ticket.title }}
+        </h1>
 
-<p class="text-xs text-gray-400">
-  Created: {{ ticket.created_at }}
-</p>
+        <p class="text-xs text-gray-400">
+          Created: {{ ticket.created_at }}
+        </p>
 
-  <!--  CREATOR -->
-  <p class="text-sm text-gray-400">
-    Created by: {{ ticket.user.name }}
-  </p>
+        <p class="text-sm text-gray-400">
+           {{ ticket.user?.name }}
+        </p>
 
-  <p class="text-gray-500 mt-1">
-    {{ ticket.description }}
-  </p>
-</div>
+        <p class="text-gray-500 mt-1">
+          {{ ticket.description }}
+        </p>
+      </div>
 
-
-
-      <!-- STATUS -->
-      <div class="flex justify-between mb-4">
+      <!--  STATUS + PRIORITY -->
+      <div class="flex justify-between items-center mb-4">
         <span :class="statusClass(ticket.status)">
           {{ ticket.status }}
         </span>
@@ -54,7 +49,56 @@
         </span>
       </div>
 
-      <!-- COMMENTS -->
+      <!--  STATUS CHANGE -->
+      <div class="mt-4">
+        <label class="text-sm text-gray-500">Change Status</label>
+
+        <div class="flex gap-2 mt-1">
+          <select v-model="selectedStatus" class="border p-2 rounded">
+            <option value="open">Open</option>
+            <option value="in_progress">In Progress</option>
+            <option value="resolved">Resolved</option>
+            <option value="closed">Closed</option>
+          </select>
+
+          <button
+            @click="updateStatus"
+            class="bg-blue-500 text-white px-3 py-1 rounded"
+          >
+            Update
+          </button>
+        </div>
+      </div>
+
+      <!--  ASSIGN AGENT -->
+      <div class="mt-4">
+        <label class="block text-sm text-gray-500 mb-1">Assign Agent</label>
+
+        <select v-model="agentId" class="border p-2 rounded w-full">
+          <option disabled value="">Select agent</option>
+
+          <option
+            v-for="user in users"
+            :key="user.id"
+            :value="user.id"
+          >
+            {{ user.name }}
+          </option>
+        </select>
+
+        <button
+          @click="assignAgent"
+          class="mt-2 bg-green-500 text-white px-4 py-2 rounded"
+        >
+          Assign
+        </button>
+
+        <p class="text-sm text-gray-400 mt-1">
+          Assigned to: {{ ticket.agent?.name || "Unassigned" }}
+        </p>
+      </div>
+
+      <!--  COMMENTS -->
       <div class="mt-6">
         <h2 class="font-bold mb-2">Comments</h2>
 
@@ -65,13 +109,9 @@
             class="border-b py-2"
           >
             <p>{{ comment.message }}</p>
-            <span class="text-xs text-gray-400">
 
             <span class="text-xs text-gray-400">
-  {{ comment.user.name }}
-</span>
-              
-
+              {{ comment.user?.name }}
             </span>
           </div>
         </div>
@@ -81,31 +121,31 @@
         </p>
       </div>
 
-      <!-- ADD COMMENT -->
+      <!--  ADD COMMENT -->
       <div class="mt-4">
 
-  <!--  BLOCCO -->
-  <div v-if="['resolved','closed'].includes(ticket.status)" class="text-gray-400">
-    Comments are disabled for this ticket
-  </div>
+        <!--  BLOCCO -->
+        <div v-if="['resolved','closed'].includes(ticket.status)" class="text-gray-400">
+          Comments are disabled for this ticket
+        </div>
 
-  <!--  FORM -->
-  <div v-else>
-    <textarea
-      v-model="newComment"
-      placeholder="Write a comment..."
-      class="w-full p-2 border rounded mb-2"
-    ></textarea>
+        <!--  FORM -->
+        <div v-else>
+          <textarea
+            v-model="newComment"
+            placeholder="Write a comment..."
+            class="w-full p-2 border rounded mb-2"
+          ></textarea>
 
-    <button
-      @click="addComment"
-      class="bg-blue-500 text-white px-4 py-2 rounded"
-    >
-      Add Comment
-    </button>
-  </div>
+          <button
+            @click="addComment"
+            class="bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            Add Comment
+          </button>
+        </div>
 
-</div>
+      </div>
 
     </div>
 
@@ -125,10 +165,18 @@ const loading = ref(true);
 const error = ref(null);
 const newComment = ref("");
 
+const users = ref([]);
+const agentId = ref("");
+const selectedStatus = ref("");
+
+//  FETCH TICKET
 const fetchTicket = async () => {
   try {
     const res = await api.get(`/tickets/${route.params.id}`);
     ticket.value = res.data.data;
+
+    selectedStatus.value = ticket.value.status;
+    agentId.value = ticket.value.assigned_to || "";
   } catch (e) {
     error.value = "Failed to load ticket";
   } finally {
@@ -136,8 +184,18 @@ const fetchTicket = async () => {
   }
 };
 
-onMounted(fetchTicket);
+//  FETCH USERS
+const fetchUsers = async () => {
+  const res = await api.get("/users");
+  users.value = res.data;
+};
 
+onMounted(() => {
+  fetchTicket();
+  fetchUsers();
+});
+
+//  ADD COMMENT
 const addComment = async () => {
   if (!newComment.value) return;
 
@@ -147,18 +205,40 @@ const addComment = async () => {
     });
 
     newComment.value = "";
-    fetchTicket(); // 🔄 refresh
+    fetchTicket();
   } catch (e) {
     alert("Error adding comment");
   }
 };
 
+//  UPDATE STATUS
+const updateStatus = async () => {
+  await api.patch(`/tickets/${ticket.value.id}/status`, {
+    status: selectedStatus.value
+  });
+
+  fetchTicket();
+};
+
+//  ASSIGN AGENT
+const assignAgent = async () => {
+  if (!agentId.value) return;
+
+  await api.patch(`/tickets/${ticket.value.id}/assign`, {
+    assigned_to: agentId.value
+  });
+
+  fetchTicket();
+};
+
+//  STATUS COLOR
 const statusClass = (status) => {
   switch (status) {
     case "open": return "text-blue-500 font-bold";
     case "in_progress": return "text-yellow-500 font-bold";
     case "resolved": return "text-green-500 font-bold";
     case "closed": return "text-gray-500 font-bold";
+    default: return "text-gray-400";
   }
 };
 </script>
