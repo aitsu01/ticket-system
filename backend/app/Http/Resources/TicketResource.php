@@ -8,34 +8,42 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class TicketResource extends JsonResource
 {
     public function toArray(Request $request): array
-    {
-        return [
-            'id' => $this->id,
+{
+    return [
+        'id' => $this->id,
 
-            'title' => $this->title,
-            'description' => $this->description,
+        'title' => $this->title,
+        'description' => $this->description,
 
-            'status' => $this->status,
-            'priority' => $this->priority,
+        'status' => $this->status,
+        'priority' => $this->priority,
 
-            /*'created_at' => $this->created_at,*/
+        //  ticket number
+        'ticket_number' => '#' . $this->id,
 
-            'ticket_number' => '#' . $this->id,
-            'created_at' => $this->created_at->format('d/m/Y H:i'),
+        //  date
+        'created_at' => $this->created_at?->format('d/m/Y H:i'),
 
-            //  creator
-            /*'user' => new UserResource($this->whenLoaded('user')),*/
-            'user' => ['id' => $this->user->id,
-    'name' => $this->user->name,
-],
-    
+        //  creator (SAFE + CONSISTENTE)
+        'user' => $this->whenLoaded('user', function () {
+            return [
+                'id' => $this->user->id,
+                'name' => $this->user->name,
+            ];
+        }),
 
-            //  agent
-            'agent' => new UserResource($this->whenLoaded('agent')),
+        //  agent (coerente con user)
+        'agent' => $this->whenLoaded('agent', function () {
+            return [
+                'id' => $this->agent->id,
+                'name' => $this->agent->name,
+            ];
+        }),
 
-            //  commenti
-           
-            'comments' => CommentResource::collection($this->comments),
-        ];
-    }
+        //  commenti (ONLY IF LOADED)
+        'comments' => CommentResource::collection(
+            $this->whenLoaded('comments')
+        ),
+    ];
+}
 }

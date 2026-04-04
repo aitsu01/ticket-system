@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-100 p-6">
 
-    <!-- 🔴 HEADER -->
+    <!--  HEADER -->
     <div class="flex justify-between items-center mb-6">
 
       <!-- LEFT -->
@@ -16,63 +16,63 @@
         <h1 class="text-2xl font-bold">Tickets</h1>
       </div>
 
+      <!--  SEARCH -->
+<div class="mb-4">
+  <input
+    v-model="search"
+    placeholder="Search tickets..."
+    class="w-full p-2 border rounded"
+  />
+</div>
+
       <!-- RIGHT -->
-      <div class="flex items-center gap-3">
-
-        <button
-          @click="goCreate"
-          class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition"
-        >
-          + New Ticket
-        </button>
-
-        <button
-          @click="logout"
-          class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition"
-        >
-          Logout
-        </button>
-
-      </div>
+      <button
+        @click="goCreate"
+        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition"
+      >
+        + New Ticket
+      </button>
 
     </div>
 
-    <!-- ⏳ LOADING -->
+    <!--  LOADING -->
     <div v-if="loading" class="text-center text-gray-500">
       Loading...
     </div>
 
-    <!-- ❌ ERROR -->
+    <!--  ERROR -->
     <div v-if="error" class="text-center text-red-500">
       {{ error }}
     </div>
 
-    <!-- 📋 LIST -->
+    <!--  LIST -->
     <div v-if="tickets.length" class="space-y-4">
 
       <div
-        v-for="ticket in tickets"
+        v-for="ticket in filteredTickets"
         :key="ticket.id"
-        class="bg-white p-4 rounded shadow flex justify-between items-center hover:shadow-md transition"
+        class="bg-white p-4 rounded shadow hover:shadow-md transition flex justify-between items-center"
       >
         <div>
 
-
+          <!-- TITLE -->
           <h2 class="font-bold">
-  {{ ticket.ticket_number }} — {{ ticket.title }}
-</h2>
+            {{ ticket.ticket_number }} — {{ ticket.title }}
+          </h2>
 
-<p class="text-xs text-gray-400">
-  Created: {{ ticket.created_at }}
-</p>
+          <!-- META -->
+          <p class="text-xs text-gray-400">
+            Created: {{ ticket.created_at }} •  {{ ticket.user?.name || 'N/A' }}
+          </p>
 
-<p :class="statusClass(ticket.status)" class="text-sm">
-  {{ ticket.status }}
-</p>
-
+          <!-- STATUS -->
+          <p :class="statusClass(ticket.status)" class="text-sm mt-1">
+            {{ ticket.status }}
+          </p>
 
         </div>
 
+        <!-- ACTION -->
         <button
           @click="viewTicket(ticket.id)"
           class="text-blue-500 hover:underline"
@@ -84,9 +84,11 @@
     </div>
 
     <!-- EMPTY -->
-    <div v-else class="text-center text-gray-400">
-      No tickets found
-    </div>
+
+
+    <div v-if="!filteredTickets.length" class="text-center text-gray-400">
+  No tickets match your search
+</div>
 
   </div>
 </template>
@@ -95,9 +97,10 @@
 import { ref, onMounted } from "vue";
 import api from "../services/api";
 import { useRouter } from "vue-router";
+import { computed } from "vue";
 
+const search = ref("");
 const router = useRouter();
-
 const tickets = ref([]);
 const loading = ref(true);
 const error = ref(null);
@@ -121,19 +124,6 @@ const goCreate = () => {
   router.push("/tickets/create");
 };
 
-const logout = async () => {
-  if (!confirm("Are you sure you want to logout?")) return;
-
-  try {
-    await api.post("/logout");
-  } catch (e) {
-    console.error(e);
-  }
-
-  localStorage.removeItem("token");
-  router.push("/");
-};
-
 const statusClass = (status) => {
   switch (status) {
     case "open":
@@ -148,4 +138,16 @@ const statusClass = (status) => {
       return "text-gray-400";
   }
 };
+
+const filteredTickets = computed(() => {
+  if (!search.value) return tickets.value;
+
+  return tickets.value.filter(ticket =>
+    ticket.title.toLowerCase().includes(search.value.toLowerCase())
+  );
+});
+
+
+
+
 </script>

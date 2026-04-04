@@ -1,25 +1,25 @@
 <template>
   <div class="min-h-screen bg-gray-100 p-6">
 
-    <!--  BACK -->
+    <!-- 🔙 BACK -->
     <button @click="router.push('/tickets')" class="mb-4 text-gray-500">
       ← Back
     </button>
 
-    <!--  LOADING -->
+    <!-- ⏳ LOADING -->
     <div v-if="loading" class="text-center text-gray-500">
       Loading...
     </div>
 
-    <!--  ERROR -->
+    <!-- ❌ ERROR -->
     <div v-if="error" class="text-center text-red-500">
       {{ error }}
     </div>
 
-    <!--  CONTENT -->
+    <!-- 📦 CONTENT -->
     <div v-if="ticket" class="max-w-2xl mx-auto bg-white p-6 rounded shadow">
 
-      <!--  HEADER -->
+      <!-- 🧾 HEADER -->
       <div class="mb-4">
         <h1 class="text-2xl font-bold">
           {{ ticket.ticket_number }} — {{ ticket.title }}
@@ -30,15 +30,24 @@
         </p>
 
         <p class="text-sm text-gray-400">
-           {{ ticket.user?.name }}
+          👤 {{ ticket.user?.name }}
         </p>
 
         <p class="text-gray-500 mt-1">
           {{ ticket.description }}
         </p>
+
+        <!-- 🗑 DELETE -->
+        <button
+          v-if="isAdmin"
+          @click="deleteTicket"
+          class="mt-3 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+        >
+          Delete Ticket
+        </button>
       </div>
 
-      <!--  STATUS + PRIORITY -->
+      <!-- ⚙️ STATUS + PRIORITY -->
       <div class="flex justify-between items-center mb-4">
         <span :class="statusClass(ticket.status)">
           {{ ticket.status }}
@@ -49,7 +58,7 @@
         </span>
       </div>
 
-      <!--  STATUS CHANGE -->
+      <!-- 🔄 STATUS CHANGE -->
       <div class="mt-4">
         <label class="text-sm text-gray-500">Change Status</label>
 
@@ -70,11 +79,15 @@
         </div>
       </div>
 
-      <!--  ASSIGN AGENT -->
+      <!-- 👨‍💼 ASSIGN AGENT -->
       <div class="mt-4">
         <label class="block text-sm text-gray-500 mb-1">Assign Agent</label>
 
-        <select v-model="agentId" class="border p-2 rounded w-full">
+        <select
+          v-model="agentId"
+          class="border p-2 rounded w-full"
+          :disabled="['resolved','closed'].includes(ticket.status)"
+        >
           <option disabled value="">Select agent</option>
 
           <option
@@ -89,16 +102,25 @@
         <button
           @click="assignAgent"
           class="mt-2 bg-green-500 text-white px-4 py-2 rounded"
+          :disabled="['resolved','closed'].includes(ticket.status)"
         >
           Assign
         </button>
+
+        <!-- 🚫 UX MESSAGE -->
+        <p
+          v-if="['resolved','closed'].includes(ticket.status)"
+          class="text-xs text-gray-400 mt-1"
+        >
+          Assignment disabled for closed/resolved tickets
+        </p>
 
         <p class="text-sm text-gray-400 mt-1">
           Assigned to: {{ ticket.agent?.name || "Unassigned" }}
         </p>
       </div>
 
-      <!--  COMMENTS -->
+      <!-- 💬 COMMENTS -->
       <div class="mt-6">
         <h2 class="font-bold mb-2">Comments</h2>
 
@@ -121,15 +143,15 @@
         </p>
       </div>
 
-      <!--  ADD COMMENT -->
+      <!-- ➕ ADD COMMENT -->
       <div class="mt-4">
 
-        <!--  BLOCCO -->
+        <!-- 🚫 BLOCCO -->
         <div v-if="['resolved','closed'].includes(ticket.status)" class="text-gray-400">
           Comments are disabled for this ticket
         </div>
 
-        <!--  FORM -->
+        <!-- ✅ FORM -->
         <div v-else>
           <textarea
             v-model="newComment"
@@ -168,6 +190,7 @@ const newComment = ref("");
 const users = ref([]);
 const agentId = ref("");
 const selectedStatus = ref("");
+const isAdmin = ref(false);
 
 //  FETCH TICKET
 const fetchTicket = async () => {
@@ -176,12 +199,18 @@ const fetchTicket = async () => {
     ticket.value = res.data.data;
 
     selectedStatus.value = ticket.value.status;
-    agentId.value = ticket.value.assigned_to || "";
+    agentId.value = ticket.value.agent?.id || "";
   } catch (e) {
     error.value = "Failed to load ticket";
   } finally {
     loading.value = false;
   }
+};
+
+//  FETCH USER (ROLE)
+const fetchUser = async () => {
+  const res = await api.get("/me");
+  isAdmin.value = res.data.role === "admin";
 };
 
 //  FETCH USERS
@@ -193,6 +222,7 @@ const fetchUsers = async () => {
 onMounted(() => {
   fetchTicket();
   fetchUsers();
+  fetchUser();
 });
 
 //  ADD COMMENT
@@ -229,6 +259,18 @@ const assignAgent = async () => {
   });
 
   fetchTicket();
+};
+
+//  DELETE
+const deleteTicket = async () => {
+  if (!confirm("Are you sure you want to delete this ticket?")) return;
+
+  try {
+    await api.delete(`/tickets/${ticket.value.id}`);
+    router.push("/tickets");
+  } catch (e) {
+    alert("Error deleting ticket");
+  }
 };
 
 //  STATUS COLOR

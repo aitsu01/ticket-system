@@ -77,6 +77,9 @@ Route::prefix('v1')->group(function () {
         //  Comments
         Route::post('tickets/{ticket}/comments', [CommentController::class, 'store']);
 
+        Route::patch('/tickets/{ticket}/status', [TicketController::class, 'changeStatus']);
+Route::patch('/tickets/{ticket}/assign', [TicketController::class, 'assign']);
+
         //  Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index']);
     });
@@ -127,6 +130,7 @@ Route::post('/reset-password', function (Request $request) {
 
 
 Route::get('/users', [UserController::class, 'index'])->middleware('auth:sanctum');
+
 
 
 });

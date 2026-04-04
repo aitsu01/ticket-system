@@ -18,7 +18,7 @@ class Ticket extends Model
         'status',
         'priority',
         'user_id',
-        'assigned_to'
+        'assigned_to',
     ];
 
     //  Creator (utente che crea ticket)

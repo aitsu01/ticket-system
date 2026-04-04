@@ -49,8 +49,8 @@ class TicketController extends Controller
 public function show(Ticket $ticket)
 {
     return new TicketResource(
-        $ticket->load(['user', 'comments.user'])
-    );
+    $ticket->load(['user', 'agent', 'comments.user'])
+);
 }
 
 
@@ -62,12 +62,47 @@ public function show(Ticket $ticket)
     return $this->service->update($ticket, $request->validated());
 }
 
-    public function destroy(Ticket $ticket)
+  public function destroy(Ticket $ticket)
 {
-    $this->authorize('delete', $ticket);
+    if (auth()->user()->role !== 'admin') {
+        return response()->json([
+            'message' => 'Unauthorized'
+        ], 403);
+    }
 
     $ticket->delete();
 
-    return response()->json(['message' => 'Deleted']);
+    return response()->json([
+        'message' => 'Ticket deleted'
+    ]);
 }
+
+public function changeStatus(Request $request, Ticket $ticket)
+{
+    $request->validate([
+        'status' => 'required|in:open,in_progress,resolved,closed'
+    ]);
+
+    $ticket->update([
+        'status' => $request->status
+    ]);
+
+    return new TicketResource($ticket);
+}
+
+public function assign(Request $request, Ticket $ticket)
+{
+    $request->validate([
+        'assigned_to' => 'required|exists:users,id'
+    ]);
+
+    $ticket->update([
+        'assigned_to' => $request->assigned_to
+    ]);
+
+    return new TicketResource($ticket->load('agent'));
+}
+
+
+
 }
