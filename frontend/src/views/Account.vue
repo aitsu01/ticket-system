@@ -90,15 +90,10 @@
       <!-- BUTTON -->
       <button
         @click="changePassword"
-        :disabled="!isPasswordValid()"
-        :class="[
-          'mt-3 px-4 py-2 rounded',
-          isPasswordValid()
-            ? 'bg-blue-500 text-white'
-            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-        ]"
+        :disabled="loading || !isPasswordValid()"
+        class="mt-3 px-4 py-2 rounded bg-blue-500 text-white disabled:opacity-50"
       >
-        Update Password
+        {{ loading ? "Updating..." : "Update Password" }}
       </button>
 
       <!-- SUCCESS -->
@@ -135,7 +130,10 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import api from "../services/api";
+
+const router = useRouter();
 
 const user = ref(null);
 
@@ -151,6 +149,8 @@ const showConfirm = ref(false);
 const passwordMessage = ref("");
 const emailMessage = ref("");
 const errorMessage = ref("");
+
+const loading = ref(false);
 
 // FETCH USER
 const fetchUser = async () => {
@@ -180,40 +180,18 @@ const passwordScore = computed(() => {
   return score;
 });
 
-// UI
 const strengthWidth = computed(() => (passwordScore.value / 5) * 100 + "%");
 
 const strengthLabel = computed(() => {
-  switch (passwordScore.value) {
-    case 1: return "Very Weak";
-    case 2: return "Weak";
-    case 3: return "Medium";
-    case 4: return "Strong";
-    case 5: return "Very Strong";
-    default: return "";
-  }
+  return ["", "Very Weak", "Weak", "Medium", "Strong", "Very Strong"][passwordScore.value];
 });
 
 const strengthColor = computed(() => {
-  switch (passwordScore.value) {
-    case 1: return "bg-red-500";
-    case 2: return "bg-orange-400";
-    case 3: return "bg-yellow-400";
-    case 4: return "bg-green-400";
-    case 5: return "bg-green-600";
-    default: return "bg-gray-300";
-  }
+  return ["bg-gray-300","bg-red-500","bg-orange-400","bg-yellow-400","bg-green-400","bg-green-600"][passwordScore.value];
 });
 
 const strengthTextColor = computed(() => {
-  switch (passwordScore.value) {
-    case 1: return "text-red-500";
-    case 2: return "text-orange-500";
-    case 3: return "text-yellow-600";
-    case 4: return "text-green-500";
-    case 5: return "text-green-700";
-    default: return "text-gray-400";
-  }
+  return ["text-gray-400","text-red-500","text-orange-500","text-yellow-600","text-green-500","text-green-700"][passwordScore.value];
 });
 
 // VALIDATION
@@ -229,10 +207,15 @@ const isPasswordValid = () => {
 
 // CHANGE PASSWORD
 const changePassword = async () => {
+  if (loading.value) return;
+
   errorMessage.value = "";
+  passwordMessage.value = "";
+  loading.value = true;
 
   if (newPassword.value !== confirmPassword.value) {
     errorMessage.value = "Passwords do not match";
+    loading.value = false;
     return;
   }
 
@@ -243,14 +226,22 @@ const changePassword = async () => {
       password_confirmation: confirmPassword.value
     });
 
-    passwordMessage.value = "Password updated successfully";
-
-    setTimeout(() => {
-      window.location.reload();
-    }, 1500);
+    passwordMessage.value = "Password updated";
 
   } catch (e) {
-    errorMessage.value = "Error updating password";
+
+    if (e.response?.status === 401) {
+      return; // interceptor gestisce logout
+    }
+
+    if (e.response?.data?.message) {
+      errorMessage.value = e.response.data.message;
+    } else {
+      errorMessage.value = "Error updating password";
+    }
+
+  } finally {
+    loading.value = false;
   }
 };
 

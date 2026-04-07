@@ -10,8 +10,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-
-class PasswordChangedMail extends Mailable
+class PasswordResetSuccessMail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -27,19 +26,16 @@ class PasswordChangedMail extends Mailable
      * Get the message envelope.
      */
     public function envelope(): Envelope
-    {
-        return new Envelope(
-            subject: 'Password Changed Mail',
-        );
-    }
+{
+    return new Envelope(
+        subject: 'Password Reset Successful',
+    );
+}
 
-    /**
-     * Get the message content definition.
-     */
-    public function content(): Content
+public function content(): Content
 {
     return new Content(
-        view: 'emails.password-changed',
+        view: 'emails.password-reset-success',
     );
 }
 
@@ -52,8 +48,4 @@ class PasswordChangedMail extends Mailable
     {
         return [];
     }
-
- 
-
-
 }
