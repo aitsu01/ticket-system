@@ -7,6 +7,15 @@ use App\Http\Controllers\API\DashboardController;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\UserController;
 
+
+use Illuminate\Support\Facades\Mail;
+use App\Mail\PasswordChangedMail;
+
+
+
+
+
+
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
@@ -17,13 +26,13 @@ use Illuminate\Support\Str;
 
 Route::prefix('v1')->group(function () {
 
-    // 🔓 PUBLIC ROUTES
+    //  PUBLIC ROUTES
 
     // AUTH
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
 
-    // 📧 EMAIL VERIFY
+    //  EMAIL VERIFY
     Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
 
         $user = User::findOrFail($id);
@@ -45,7 +54,7 @@ Route::prefix('v1')->group(function () {
     })->middleware('signed')->name('verification.verify');
 
 
-    // 🔁 RESEND VERIFICATION (PUBLIC)
+    //  RESEND VERIFICATION (PUBLIC)
     Route::post('/resend-verification', function (Request $request) {
 
         $request->validate([
@@ -74,7 +83,7 @@ Route::prefix('v1')->group(function () {
     });
 
 
-    // 🔐 PASSWORD RESET
+    //  PASSWORD RESET
     Route::post('/forgot-password', function (Request $request) {
 
         $request->validate(['email' => 'required|email']);
@@ -116,7 +125,7 @@ Route::prefix('v1')->group(function () {
     });
 
 
-    // 🔐 PROTECTED ROUTES
+    //  PROTECTED ROUTES
     Route::middleware('auth:sanctum')->group(function () {
 
         // AUTH
@@ -137,6 +146,58 @@ Route::prefix('v1')->group(function () {
 
         // DASHBOARD
         Route::get('/dashboard', [DashboardController::class, 'index']);
+
+
+
+        // User
+       Route::patch('/user/password', function (Request $request) {
+
+    $request->validate([
+        'current_password' => 'required',
+        'password' => 'required|min:8|confirmed'
+    ]);
+
+    $user = $request->user();
+
+    if (!Hash::check($request->current_password, $user->password)) {
+        return response()->json(['message' => 'Wrong password'], 400);
+    }
+
+    $user->update([
+        'password' => Hash::make($request->password)
+    ]);
+
+    //  INVIA EMAIL
+    Mail::to($user->email)->send(new PasswordChangedMail());
+
+    return response()->json([
+        'message' => 'Password updated'
+    ]);
+});
+
+
+
+
+
+Route::patch('/user/email', function (Request $request) {
+
+    $request->validate([
+        'email' => 'required|email|unique:users,email'
+    ]);
+
+    $user = $request->user();
+
+    $user->update([
+        'email' => $request->email,
+        'email_verified_at' => null // 🔥 richiede nuova verifica
+    ]);
+
+    $user->sendEmailVerificationNotification();
+
+    return response()->json([
+        'message' => 'Email updated, please verify'
+    ]);
+});
 
     });
 

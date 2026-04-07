@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 
-//  AUTH PAGES
+// AUTH
 import Login from "../views/Login.vue";
 import Register from "../views/Register.vue";
 import ForgotPassword from "../views/ForgotPassword.vue";
@@ -8,27 +8,28 @@ import ResetPassword from "../views/ResetPassword.vue";
 import EmailVerified from "../views/EmailVerified.vue";
 import Home from "../views/Home.vue";
 
+// ACCOUNT
+import Account from "../views/Account.vue";
 
-
-//  LAYOUT
+// LAYOUT
 import AppLayout from "../layouts/AppLayout.vue";
 
-//  APP PAGES
+// APP
 import Dashboard from "../views/Dashboard.vue";
 import Tickets from "../views/Tickets.vue";
 import CreateTicket from "../views/CreateTicket.vue";
 import TicketDetail from "../views/TicketDetail.vue";
 
 const routes = [
-  { path: "/", component: Home },
   //  PUBLIC
+  { path: "/", component: Home },
   { path: "/login", component: Login },
   { path: "/register", component: Register },
   { path: "/forgot-password", component: ForgotPassword },
   { path: "/reset-password", component: ResetPassword },
   { path: "/email-verified", component: EmailVerified },
 
-  //  PROTECTED (CON LAYOUT)
+  //  PROTECTED
   {
     path: "/",
     component: AppLayout,
@@ -38,6 +39,7 @@ const routes = [
       { path: "tickets", component: Tickets },
       { path: "tickets/create", component: CreateTicket },
       { path: "tickets/:id", component: TicketDetail },
+      { path: "account", component: Account },
     ],
   },
 ];
@@ -47,12 +49,16 @@ const router = createRouter({
   routes,
 });
 
-//  AUTH GUARD
+//  GUARD
 router.beforeEach((to) => {
   const token = localStorage.getItem("token");
 
   if (to.meta.requiresAuth && !token) {
-    return "/";
+    return "/login";
+  }
+
+  if (token && ["/login", "/register"].includes(to.path)) {
+    return "/dashboard";
   }
 });
 

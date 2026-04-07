@@ -1,67 +1,80 @@
 <template>
-  <div class="flex h-screen bg-gray-100">
+  <div class="min-h-screen bg-gray-100">
 
-    <!--  SIDEBAR -->
-    <div class="w-64 bg-white shadow-md p-4">
+    <!--  NAVBAR -->
+    <div class="bg-white shadow px-6 py-4 flex justify-between items-center">
 
-      <h2 class="text-xl font-bold mb-6">Ticket System</h2>
+      <!-- LEFT -->
+      <div class="flex items-center gap-6">
+        <h1 class="font-bold text-lg">Ticket System</h1>
 
-      <nav class="flex flex-col gap-3">
+        <router-link to="/dashboard" class="text-gray-600 hover:text-black">
+          Dashboard
+        </router-link>
 
-        <button
-          @click="$router.push('/dashboard')"
-          class="text-left hover:text-blue-500"
-        >
-           Dashboard
-        </button>
+        <router-link to="/tickets" class="text-gray-600 hover:text-black">
+          Tickets
+        </router-link>
+      </div>
 
-        <button
-          @click="$router.push('/tickets')"
-          class="text-left hover:text-blue-500"
-        >
-           Tickets
-        </button>
+      <!-- RIGHT -->
+      <div class="flex items-center gap-4">
 
-      </nav>
+        <span class="text-sm text-gray-500">
+          {{ user?.name }}
+        </span>
 
-    </div>
-
-    <!--  MAIN -->
-    <div class="flex-1 flex flex-col">
-
-      <!--  NAVBAR -->
-      <div class="bg-white shadow p-4 flex justify-between items-center">
-
-        <h1 class="font-bold">Helpdesk</h1>
+        <router-link to="/account" class="text-gray-600 hover:text-black">
+  Account
+</router-link>
 
         <button
           @click="logout"
-          class="bg-red-500 text-white px-3 py-1 rounded"
+          class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
         >
           Logout
         </button>
 
       </div>
 
-      <!--  CONTENT -->
-      <div class="flex-1 overflow-y-auto p-6">
-        <router-view />
-      </div>
+    </div>
 
+    <!--  CONTENT -->
+    <div class="p-6">
+      <router-view />
     </div>
 
   </div>
 </template>
 
 <script setup>
+import { ref, onMounted } from "vue";
 import api from "../services/api";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
+const user = ref(null);
 
+//  FETCH USER
+const fetchUser = async () => {
+  try {
+    const res = await api.get("/me");
+    user.value = res.data;
+  } catch (e) {
+    localStorage.removeItem("token");
+    router.push("/login");
+  }
+};
+
+onMounted(fetchUser);
+
+//  LOGOUT
 const logout = async () => {
-  await api.post("/logout");
+  try {
+    await api.post("/logout");
+  } catch (e) {}
+
   localStorage.removeItem("token");
-  router.push("/");
+  router.push("/login");
 };
 </script>
