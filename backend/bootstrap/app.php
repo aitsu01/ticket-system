@@ -19,7 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
    $middleware->alias([
     'auth' => \App\Http\Middleware\Authenticate::class,
-]);
+    
+        'role' => \App\Http\Middleware\RoleMiddleware::class,
+    ]);
+
 
 })
     ->withExceptions(function (Exceptions $exceptions): void {

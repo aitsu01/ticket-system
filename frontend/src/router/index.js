@@ -8,6 +8,7 @@ import ResetPassword from "../views/ResetPassword.vue";
 import EmailVerified from "../views/EmailVerified.vue";
 import Home from "../views/Home.vue";
 
+
 // ACCOUNT
 import Account from "../views/Account.vue";
 
@@ -19,6 +20,7 @@ import Dashboard from "../views/Dashboard.vue";
 import Tickets from "../views/Tickets.vue";
 import CreateTicket from "../views/CreateTicket.vue";
 import TicketDetail from "../views/TicketDetail.vue";
+
 
 const routes = [
   //  PUBLIC
@@ -40,6 +42,7 @@ const routes = [
       { path: "tickets/create", component: CreateTicket },
       { path: "tickets/:id", component: TicketDetail },
       { path: "account", component: Account },
+      { path: "admin/users", component: () => import("../views/AdminUsers.vue") }
     ],
   },
 ];

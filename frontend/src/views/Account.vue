@@ -90,10 +90,16 @@
       <!-- BUTTON -->
       <button
         @click="changePassword"
-        :disabled="loading || !isPasswordValid()"
+        :disabled="loading || passwordChanged || !isPasswordValid()"
         class="mt-3 px-4 py-2 rounded bg-blue-500 text-white disabled:opacity-50"
       >
-        {{ loading ? "Updating..." : "Update Password" }}
+        {{
+          passwordChanged
+            ? "Password Updated"
+            : loading
+              ? "Updating..."
+              : "Update Password"
+        }}
       </button>
 
       <!-- SUCCESS -->
@@ -130,10 +136,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
 import api from "../services/api";
-
-const router = useRouter();
 
 const user = ref(null);
 
@@ -151,6 +154,7 @@ const emailMessage = ref("");
 const errorMessage = ref("");
 
 const loading = ref(false);
+const passwordChanged = ref(false);
 
 // FETCH USER
 const fetchUser = async () => {
@@ -205,9 +209,10 @@ const isPasswordValid = () => {
   );
 };
 
-// CHANGE PASSWORD
+// 🔥 CHANGE PASSWORD DEFINITIVO
 const changePassword = async () => {
-  if (loading.value) return;
+
+  if (loading.value || passwordChanged.value) return;
 
   errorMessage.value = "";
   passwordMessage.value = "";
@@ -226,13 +231,25 @@ const changePassword = async () => {
       password_confirmation: confirmPassword.value
     });
 
-    passwordMessage.value = "Password updated";
+    passwordChanged.value = true;
+
+    passwordMessage.value = "Password updated. Logging out...";
+
+    // pulizia sicurezza
+    currentPassword.value = "";
+    newPassword.value = "";
+    confirmPassword.value = "";
+
+    // logout controllato
+    localStorage.removeItem("token");
+
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 1000);
 
   } catch (e) {
 
-    if (e.response?.status === 401) {
-      return; // interceptor gestisce logout
-    }
+    if (e.response?.status === 401) return;
 
     if (e.response?.data?.message) {
       errorMessage.value = e.response.data.message;

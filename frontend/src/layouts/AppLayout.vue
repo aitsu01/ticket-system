@@ -15,6 +15,16 @@
         <router-link to="/tickets" class="text-gray-600 hover:text-black">
           Tickets
         </router-link>
+
+        <!--  SOLO ADMIN -->
+  <router-link
+    v-if="user?.role === 'admin'"
+    to="/admin/users"
+  >
+    Users
+  </router-link>
+
+
       </div>
 
       <!-- RIGHT -->
