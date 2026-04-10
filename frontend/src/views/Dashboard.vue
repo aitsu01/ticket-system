@@ -1,30 +1,30 @@
 <template>
   <div class="min-h-screen bg-gray-100 p-6">
 
-    <!-- 🔴 HEADER -->
+    <!--  HEADER -->
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold">Dashboard</h1>
 
       <!-- ➡️ NAV -->
       <button
-        @click="$router.push('/tickets')"
+        @click="$router.push('/app/tickets')"
         class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition"
       >
         Go to Tickets
       </button>
     </div>
 
-    <!-- ⏳ Loading -->
+    <!--  Loading -->
     <div v-if="loading" class="text-center text-gray-500">
       Loading...
     </div>
 
-    <!-- ❌ Error -->
+    <!--  Error -->
     <div v-if="error" class="text-center text-red-500">
       {{ error }}
     </div>
 
-    <!-- 📊 STATS -->
+    <!--  STATS -->
     <div v-if="data" class="grid grid-cols-2 md:grid-cols-5 gap-4">
 
       <!-- TOTAL -->
@@ -51,13 +51,13 @@
         <p class="text-xl font-bold text-green-500">{{ data.resolved }}</p>
       </div>
 
-      <!-- 🔥 CLOSED -->
+      <!--  CLOSED -->
       <div class="bg-white p-4 rounded shadow">
         <p class="text-gray-500">Closed</p>
         <p class="text-xl font-bold text-gray-500">{{ data.closed }}</p>
       </div>
 
-      <!-- 👨‍💼 AGENTS -->
+      <!--  AGENTS -->
       <div class="bg-white p-4 rounded shadow col-span-2 md:col-span-5">
         <p class="text-gray-500 mb-2 font-semibold">Tickets by Agent</p>
 

@@ -84,7 +84,7 @@ const create = async () => {
       priority: priority.value,
     });
 
-    router.push("/tickets"); //  redirect dopo creazione
+    router.push("/app/tickets"); //  redirect dopo creazione
 
   } catch (e) {
     error.value = "Failed to create ticket";

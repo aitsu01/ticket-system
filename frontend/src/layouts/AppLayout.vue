@@ -1,43 +1,48 @@
 <template>
   <div class="min-h-screen bg-gray-100">
 
-    <!--  NAVBAR -->
+    <!-- 🔝 NAVBAR -->
     <div class="bg-white shadow px-6 py-4 flex justify-between items-center">
 
       <!-- LEFT -->
       <div class="flex items-center gap-6">
         <h1 class="font-bold text-lg">Ticket System</h1>
 
-        <router-link to="/dashboard" class="text-gray-600 hover:text-black">
+        <router-link to="/app/dashboard" class="text-gray-600 hover:text-black">
           Dashboard
         </router-link>
 
-        <router-link to="/tickets" class="text-gray-600 hover:text-black">
+        <router-link to="/app/tickets" class="text-gray-600 hover:text-black">
           Tickets
         </router-link>
 
-        <!--  SOLO ADMIN -->
-  <router-link
-    v-if="user?.role === 'admin'"
-    to="/admin/users"
-  >
-    Users
-  </router-link>
-
-
+        <!-- ADMIN ONLY -->
+        <router-link
+          v-if="user?.role === 'admin'"
+          to="/app/admin/users"
+          class="text-gray-600 hover:text-black"
+        >
+          Users
+        </router-link>
       </div>
 
       <!-- RIGHT -->
       <div class="flex items-center gap-4">
 
+        <!-- USER NAME -->
         <span class="text-sm text-gray-500">
           {{ user?.name }}
         </span>
 
-        <router-link to="/account" class="text-gray-600 hover:text-black">
-  Account
-</router-link>
+        <!-- ACCOUNT -->
+        <router-link
+          to="/app/account"
+          class="text-gray-600 hover:text-black"
+        >
+          Account
+        </router-link>
 
+        <!-- LOGOUT -->
         <button
           @click="logout"
           class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
@@ -49,7 +54,7 @@
 
     </div>
 
-    <!--  CONTENT -->
+    <!-- 📄 CONTENT -->
     <div class="p-6">
       <router-view />
     </div>
@@ -65,12 +70,13 @@ import { useRouter } from "vue-router";
 const router = useRouter();
 const user = ref(null);
 
-//  FETCH USER
+// 👤 FETCH USER
 const fetchUser = async () => {
   try {
     const res = await api.get("/me");
     user.value = res.data;
   } catch (e) {
+    // 🔒 token non valido → logout
     localStorage.removeItem("token");
     router.push("/login");
   }
@@ -78,13 +84,17 @@ const fetchUser = async () => {
 
 onMounted(fetchUser);
 
-//  LOGOUT
+// 🚪 LOGOUT
 const logout = async () => {
   try {
     await api.post("/logout");
-  } catch (e) {}
+  } catch (e) {
+    // anche se fallisce, logout client
+  }
 
   localStorage.removeItem("token");
+
+  // 🔥 redirect corretto
   router.push("/login");
 };
 </script>

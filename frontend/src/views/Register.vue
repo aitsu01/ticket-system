@@ -91,6 +91,30 @@
         Register
       </button>
 
+      <!-- DIVIDER -->
+<div class="flex items-center my-4">
+  <div class="flex-1 h-px bg-gray-300"></div>
+  <span class="px-2 text-sm text-gray-500">or</span>
+  <div class="flex-1 h-px bg-gray-300"></div>
+</div>
+
+<!-- GOOGLE REGISTER -->
+<button
+  @click="loginWithGoogle"
+  class="w-full flex items-center justify-center gap-3 border border-gray-200 bg-white hover:shadow-md px-4 py-2 rounded-lg transition"
+>
+  <svg class="w-5 h-5" viewBox="0 0 48 48">
+    <path fill="#EA4335" d="M24 9.5c3.54 0 6.73 1.22 9.24 3.6l6.9-6.9C35.64 2.7 30.2 0 24 0 14.64 0 6.64 5.4 2.88 13.32l8.04 6.24C12.6 13.32 17.88 9.5 24 9.5z"/>
+    <path fill="#4285F4" d="M46.5 24.5c0-1.64-.14-2.86-.44-4.14H24v7.84h12.74c-.26 1.9-1.66 4.76-4.74 6.7l7.34 5.7C43.9 36.44 46.5 30.94 46.5 24.5z"/>
+    <path fill="#FBBC05" d="M10.92 28.56a14.8 14.8 0 010-9.12l-8.04-6.24A23.96 23.96 0 000 24c0 3.84.92 7.46 2.88 10.8l8.04-6.24z"/>
+    <path fill="#34A853" d="M24 48c6.2 0 11.4-2.04 15.2-5.54l-7.34-5.7c-1.96 1.36-4.54 2.3-7.86 2.3-6.12 0-11.4-3.82-13.08-9.06l-8.04 6.24C6.64 42.6 14.64 48 24 48z"/>
+  </svg>
+
+  <span class="text-sm font-medium text-gray-700">
+    Sign up with Google
+  </span>
+</button>
+
       <!-- LINK -->
       <router-link to="/" class="text-sm text-blue-500">
         Back to Login
@@ -125,6 +149,11 @@ const errorMessage = ref("");
 const successMessage = ref("");
 
 const showRequirements = ref(false);
+
+//Register with Google
+const loginWithGoogle = () => {
+  window.location.href = "http://127.0.0.1:8000/api/v1/auth/google/redirect";
+};
 
 // CHECK CLASS
 const checkClass = (condition) => {

@@ -6,7 +6,7 @@
 
       <div class="flex items-center gap-4">
         <button
-          @click="router.push('/dashboard')"
+          @click="router.push('/app/dashboard')"
           class="text-gray-500 hover:text-black transition"
         >
           ← Dashboard
@@ -144,7 +144,7 @@ const fetchUser = async () => {
   currentUser.value = res.data;
 };
 
-// 📦 FETCH TICKETS (BACKEND FILTER)
+// 📦 FETCH TICKETS
 const fetchTickets = async () => {
   loading.value = true;
 
@@ -189,7 +189,7 @@ const resetFilters = () => {
   assignedToMe.value = false;
 };
 
-// 👀 WATCH → AUTO SEARCH
+// 👀 WATCH
 watch(
   [search, statusFilter, myTickets, assignedToMe],
   () => {
@@ -208,12 +208,12 @@ const statusClass = (status) => {
   }
 };
 
-// 📌 NAV
+// 📌 NAV CORRETTA
 const viewTicket = (id) => {
-  router.push(`/tickets/${id}`);
+  router.push(`/app/tickets/${id}`); 
 };
 
 const goCreate = () => {
-  router.push("/tickets/create");
+  router.push("/app/tickets/create"); 
 };
 </script>

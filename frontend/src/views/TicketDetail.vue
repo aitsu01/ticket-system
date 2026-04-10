@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gray-100 p-6">
 
     <!-- 🔙 BACK -->
-    <button @click="router.push('/tickets')" class="mb-4 text-gray-500">
+    <button @click="router.push('/app/tickets')" class="mb-4 text-gray-500">
       ← Back
     </button>
 
@@ -267,7 +267,7 @@ const deleteTicket = async () => {
 
   try {
     await api.delete(`/tickets/${ticket.value.id}`);
-    router.push("/tickets");
+    router.push("/app/tickets");
   } catch (e) {
     alert("Error deleting ticket");
   }
