@@ -4,7 +4,7 @@
 
       <h2 class="text-xl font-bold mb-4 text-center">Login</h2>
 
-      <!--  ERROR -->
+      <!--  ERROR GENERALE -->
       <p v-if="errorMessage" class="text-red-500 mb-3 text-sm text-center">
         {{ errorMessage }}
       </p>
@@ -17,18 +17,23 @@
       <!--  EMAIL -->
       <input
         v-model="email"
+        @input="clearErrors"
         type="email"
         placeholder="Email"
-        class="w-full mb-2 p-2 border rounded"
+        :class="inputClass(errors.email)"
       />
+      <p v-if="errors.email" class="text-red-500 text-xs mb-2">
+        {{ errors.email }}
+      </p>
 
       <!--  PASSWORD -->
-      <div class="relative mb-4">
+      <div class="relative mb-1">
         <input
           v-model="password"
+          @input="clearErrors"
           :type="showPassword ? 'text' : 'password'"
           placeholder="Password"
-          class="w-full p-2 border rounded"
+          :class="inputClass(errors.password)"
         />
         <button
           type="button"
@@ -38,6 +43,10 @@
           {{ showPassword ? 'hide' : 'show' }}
         </button>
       </div>
+
+      <p v-if="errors.password || credentialError" class="text-red-500 text-xs mb-2">
+  {{ errors.password || credentialError }}
+</p>
 
       <!--  LOGIN -->
       <button
@@ -95,6 +104,8 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 
+const credentialError = ref("");
+
 // STATE
 const email = ref("");
 const password = ref("");
@@ -103,11 +114,13 @@ const showPassword = ref(false);
 const errorMessage = ref("");
 const successMessage = ref("");
 
+const errors = ref({}); //  FIELD ERRORS
+
 const loading = ref(false);
 const resendLoading = ref(false);
 const emailNotVerified = ref(false);
 
-//  COOLDOWN
+// COOLDOWN
 const cooldown = ref(0);
 let interval = null;
 
@@ -123,10 +136,27 @@ const startCooldown = () => {
   }, 1000);
 };
 
-//  LOGIN
-const login = async () => {
+//  CLASS INPUT
+const inputClass = (error) => {
+  return [
+    "w-full p-2 border rounded mb-1",
+    error ? "border-red-500" : "border-gray-300"
+  ];
+};
+
+//  CLEAR ERROR
+const clearErrors = () => {
   errorMessage.value = "";
-  successMessage.value = "";
+  credentialError.value = "";
+  errors.value = {};
+};
+
+
+
+// LOGIN
+const login = async () => {
+  clearErrors();
+  credentialError.value = "";
   emailNotVerified.value = false;
   loading.value = true;
 
@@ -141,26 +171,49 @@ const login = async () => {
 
   } catch (error) {
 
-    if (
-      error.response?.status === 403 ||
-      error.response?.data?.message?.includes("not verified")
-    ) {
-      emailNotVerified.value = true;
-      errorMessage.value = "Email not verified";
+  // 🔥 RATE LIMIT
+  if (error.response?.status === 429) {
+    errorMessage.value = "Too many attempts. Try again later.";
+    return;
+  }
 
-    } else if (error.response?.status === 401) {
-      errorMessage.value = "Invalid credentials";
+  // VALIDATION
+  if (error.response?.data?.errors) {
+    errors.value = {
+      email: error.response.data.errors.email?.[0],
+      password: error.response.data.errors.password?.[0],
+    };
+    return;
+  }
 
-    } else {
-      errorMessage.value = "Something went wrong";
-    }
+  // EMAIL NOT VERIFIED
+  if (
+    error.response?.status === 403 ||
+    error.response?.data?.message?.includes("not verified")
+  ) {
+    emailNotVerified.value = true;
+    errorMessage.value = "Email not verified. Please verify your account.";
+    return;
+  }
+
+  // INVALID CREDENTIALS
+  if (error.response?.status === 401) {
+    credentialError.value = "Invalid email or password";
+    return;
+  }
+
+  // GENERIC
+  errorMessage.value = error.response?.data?.message || "Something went wrong";
+
 
   } finally {
     loading.value = false;
   }
+
 };
 
-//  RESEND
+
+// RESEND
 const resendVerification = async () => {
   if (cooldown.value > 0) return;
 
@@ -177,7 +230,7 @@ const resendVerification = async () => {
     startCooldown();
 
   } catch (e) {
-    errorMessage.value = "Error sending email";
+    errorMessage.value = e.response?.data?.message || "Error sending email";
   } finally {
     resendLoading.value = false;
   }

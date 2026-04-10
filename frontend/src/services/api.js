@@ -22,12 +22,12 @@ api.interceptors.response.use(
   response => response,
   error => {
 
-    if (error.response?.status === 401) {
+    const isLoginRequest = error.config?.url?.includes("/login");
 
-      //  logout automatico
+    //  NON REDIRECTARE SE È LOGIN
+    if (error.response?.status === 401 && !isLoginRequest) {
+
       localStorage.removeItem("token");
-
-      // redirect login
       window.location.href = "/login";
     }
 
