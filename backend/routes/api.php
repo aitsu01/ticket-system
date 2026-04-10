@@ -20,6 +20,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
+
+use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Facades\Auth;
+
+
+
+
+
+
 Route::prefix('v1')->group(function () {
 
     // =========================
@@ -29,6 +38,32 @@ Route::prefix('v1')->group(function () {
     // AUTH
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+
+    Route::get('/auth/google/redirect', function () {
+    return Socialite::driver('google')->stateless()->redirect();
+});
+
+Route::get('/auth/google/callback', function () {
+
+    $googleUser = Socialite::driver('google')->stateless()->user();
+
+    $user = User::where('email', $googleUser->getEmail())->first();
+
+    if (!$user) {
+        $user = User::create([
+            'name' => $googleUser->getName(),
+            'email' => $googleUser->getEmail(),
+            'password' => bcrypt(Str::random(16)),
+            'email_verified_at' => now()
+        ]);
+    }
+
+    $token = $user->createToken('api_token')->plainTextToken;
+
+    // redirect frontend con token
+    return redirect("http://localhost:5173/oauth-success?token={$token}");
+});
+
 
     // EMAIL VERIFY
     Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
