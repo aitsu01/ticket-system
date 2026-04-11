@@ -1,4 +1,3 @@
-
 <template>
   <div class="max-w-4xl mx-auto">
 
@@ -17,21 +16,23 @@
           <p class="font-bold">{{ u.name }}</p>
           <p class="text-sm text-gray-500">{{ u.email }}</p>
 
+          <!-- ROLE -->
           <span class="text-xs bg-gray-200 px-2 py-1 rounded">
             {{ u.role }}
           </span>
 
+          <!-- STATUS -->
           <span
             class="text-xs px-2 py-1 rounded ml-2"
-            :class="u.is_active ? 'bg-green-200' : 'bg-red-200'"
+            :class="u.is_active ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'"
           >
             {{ u.is_active ? 'Active' : 'Disabled' }}
           </span>
         </div>
 
-        <div class="flex gap-2">
+        <div class="flex gap-2 items-center">
 
-          <!-- ROLE -->
+          <!-- ROLE SELECT -->
           <select v-model="u.role" class="border p-1 rounded">
             <option value="user">User</option>
             <option value="agent">Agent</option>
@@ -40,7 +41,7 @@
 
           <button
             @click="updateRole(u)"
-            class="bg-blue-500 text-white px-2 py-1 rounded"
+            class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
           >
             Save
           </button>
@@ -48,7 +49,13 @@
           <!-- ACTIVE -->
           <button
             @click="toggleActive(u)"
-            class="bg-yellow-500 text-white px-2 py-1 rounded"
+            :disabled="u.id === currentUser.id"
+            class="px-2 py-1 rounded text-white"
+            :class="[
+              u.id === currentUser.id
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-yellow-500 hover:bg-yellow-600'
+            ]"
           >
             {{ u.is_active ? "Disable" : "Enable" }}
           </button>
@@ -67,28 +74,59 @@ import api from "../services/api";
 
 const users = ref([]);
 const loading = ref(true);
+const currentUser = ref(null);
 
+//  FETCH USERS
 const fetchUsers = async () => {
-  const res = await api.get("/users");
-  users.value = res.data;
-  loading.value = false;
+  try {
+    const res = await api.get("/users");
+    users.value = res.data;
+  } catch (e) {
+    alert("Error loading users");
+  } finally {
+    loading.value = false;
+  }
 };
 
-onMounted(fetchUsers);
+//  FETCH CURRENT USER
+const fetchCurrentUser = async () => {
+  const res = await api.get("/me");
+  currentUser.value = res.data;
+};
 
-//  update role
+onMounted(() => {
+  fetchUsers();
+  fetchCurrentUser();
+});
+
+// ========================
+// UPDATE ROLE
+// ========================
 const updateRole = async (user) => {
-  await api.patch(`/users/${user.id}/role`, {
-    role: user.role
-  });
+  try {
+    await api.patch(`/users/${user.id}/role`, {
+      role: user.role
+    });
 
-  alert("Role updated");
+    alert("Role updated");
+
+  } catch (e) {
+    alert(e.response?.data?.message || "Error updating role");
+  }
 };
 
-//  toggle active
+// ========================
+// TOGGLE ACTIVE
+// ========================
 const toggleActive = async (user) => {
-  await api.patch(`/users/${user.id}/toggle-active`);
+  try {
+    const res = await api.patch(`/users/${user.id}/toggle-active`);
 
-  user.is_active = !user.is_active;
+    //  aggiorna stato dal backend (più sicuro)
+    user.is_active = res.data.is_active;
+
+  } catch (e) {
+    alert(e.response?.data?.message || "Error updating user");
+  }
 };
 </script>

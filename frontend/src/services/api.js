@@ -27,6 +27,11 @@ api.interceptors.response.use(
     //  NON REDIRECTARE SE È LOGIN
     if (error.response?.status === 401 && !isLoginRequest) {
 
+      
+       alert("Session expired or account disabled");
+  
+
+
       localStorage.removeItem("token");
       window.location.href = "/login";
     }

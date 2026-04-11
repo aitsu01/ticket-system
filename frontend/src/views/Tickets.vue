@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-100 p-6">
 
-    <!-- 🔴 HEADER -->
+    <!--  HEADER -->
     <div class="flex justify-between items-center mb-6">
 
       <div class="flex items-center gap-4">
@@ -24,7 +24,7 @@
 
     </div>
 
-    <!-- 🔍 SEARCH -->
+    <!--  SEARCH -->
     <div class="mb-4">
       <input
         v-model="search"
@@ -33,7 +33,7 @@
       />
     </div>
 
-    <!-- 🎯 FILTERS -->
+    <!--  FILTERS -->
     <div class="flex gap-2 mb-4 flex-wrap">
 
       <select v-model="statusFilter" class="border p-2 rounded">
@@ -69,17 +69,17 @@
 
     </div>
 
-    <!-- ⏳ LOADING -->
+    <!--  LOADING -->
     <div v-if="loading" class="text-center text-gray-500">
       Loading...
     </div>
 
-    <!-- ❌ ERROR -->
+    <!--  ERROR -->
     <div v-if="error" class="text-center text-red-500">
       {{ error }}
     </div>
 
-    <!-- 📋 LIST -->
+    <!--  LIST -->
     <div v-if="tickets.length" class="space-y-4">
 
       <div
@@ -138,13 +138,13 @@ const myTickets = ref(false);
 const assignedToMe = ref(false);
 const currentUser = ref(null);
 
-// 👤 FETCH USER
+//  FETCH USER
 const fetchUser = async () => {
   const res = await api.get("/me");
   currentUser.value = res.data;
 };
 
-// 📦 FETCH TICKETS
+//  FETCH TICKETS
 const fetchTickets = async () => {
   loading.value = true;
 

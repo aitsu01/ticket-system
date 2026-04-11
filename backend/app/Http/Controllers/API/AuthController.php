@@ -36,12 +36,12 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        //  email verifica
+        //  Email verifica
         $user->sendEmailVerificationNotification();
 
         //  AUDIT
         Audit::log($user, 'register', [
-            'email' => $user->email
+            'method' => 'email'
         ]);
 
         return response()->json([
@@ -89,13 +89,13 @@ class AuthController extends Controller
             ], 401);
         }
 
-        //  ACCOUNT DISABLED
-        if (isset($user->is_active) && !$user->is_active) {
+        //  ACCOUNT DISABLED (PRIMA DI TUTTO)
+        if (!$user->is_active) {
 
             Audit::log($user, 'login_blocked_disabled');
 
             return response()->json([
-                'message' => 'Account disabled. Contact support.'
+                'message' => 'Account disabled'
             ], 403);
         }
 
@@ -128,21 +128,29 @@ class AuthController extends Controller
     // LOGOUT
     // ========================
     public function logout(Request $request)
-{
-    $user = $request->user();
+    {
+        $user = $request->user();
 
-    //  controlla se token esiste
-    if ($user && $request->user()->currentAccessToken()) {
+        if ($user && $request->user()->currentAccessToken()) {
 
-        Audit::log($user, 'logout');
+            //  evita duplicati logout (entro 5 sec)
+            $recentLogout = \App\Models\AuditLog::where('user_id', $user->id)
+                ->where('action', 'logout')
+                ->where('created_at', '>=', now()->subSeconds(5))
+                ->exists();
 
-        $request->user()->currentAccessToken()->delete();
+            if (!$recentLogout) {
+                Audit::log($user, 'logout');
+            }
+
+            $request->user()->currentAccessToken()->delete();
+        }
+
+        return response()->json([
+            'message' => 'Logged out'
+        ]);
     }
 
-    return response()->json([
-        'message' => 'Logged out'
-    ]);
-}
     // ========================
     // ME
     // ========================

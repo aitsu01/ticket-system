@@ -99,7 +99,7 @@
       </form>
 
       <!--  RESEND VERIFICATION -->
-      <div v-if="emailNotVerified" class="mb-3 text-center">
+      <div v-if="emailNotVerified && !errorMessage.includes('disabled')"> class="mb-3 text-center">
 
         <p class="text-sm text-gray-600 mb-2">
           Didn't receive the verification email?
@@ -250,14 +250,27 @@ if (!password.value) {
     }
 
     // EMAIL NOT VERIFIED
-    if (
-      error.response?.status === 403 ||
-      error.response?.data?.message?.includes("not verified")
-    ) {
-      emailNotVerified.value = true;
-      errorMessage.value = "Email not verified. Please verify your account.";
-      return;
-    }
+
+    if (error.response?.status === 403) {
+
+  const message = error.response.data.message;
+
+  //  ACCOUNT DISABLED
+  if (message.includes("disabled")) {
+    errorMessage.value = "Your account has been disabled. Contact support.";
+    emailNotVerified.value = false;
+    return;
+  }
+
+  //  EMAIL NOT VERIFIED
+  if (message.includes("not verified")) {
+    errorMessage.value = "Please verify your email before logging in.";
+    emailNotVerified.value = true;
+    return;
+  }
+}
+
+
 
     // INVALID CREDENTIALS
     if (error.response?.status === 401) {
