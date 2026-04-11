@@ -1,100 +1,86 @@
-<h1 align="center">Ticket System</h1>
+<h1 align="center"> Ticket System</h1>
 
 <p align="center">
-  A full-stack ticket management system built with <strong>Laravel</strong>, <strong>Vue 3</strong>, and <strong>Tailwind CSS</strong>.
+  Full-stack ticket management system built with Laravel, Vue 3 and Tailwind CSS
 </p>
 
 <p align="center">
-  This project showcases a modern SaaS-style application with authentication, role-based access control, Google OAuth login, and a clean user interface.
+  <strong> Portfolio Project • SaaS-ready Architecture • RBAC • Audit Logs • OAuth</strong>
 </p>
 
-<hr>
+<hr/>
 
-<h2>Overview</h2>
+<h2> Overview</h2>
 
 <p>
-  The application allows users to create, manage, and track support tickets through a modern single-page interface.
+A modern ticket management system that allows users to create, manage, and track support tickets.
+The application includes authentication, role-based access control, audit logs, and Google OAuth login.
 </p>
 
-<p>It includes:</p>
+---
 
-<ul>
-  <li>Secure authentication (classic + Google OAuth)</li>
-  <li>Role-based access control (RBAC)</li>
-  <li>Ticket lifecycle management</li>
-  <li>Dashboard analytics</li>
-  <li>Account management</li>
-</ul>
+<h2> Features</h2>
 
-<hr>
-
-<h2>Main Features</h2>
-
-<h3>Authentication</h3>
+<h3> Authentication</h3>
 <ul>
   <li>Register / Login / Logout</li>
   <li>Password reset via email</li>
   <li>Email verification</li>
-  <li>Google OAuth login with Socialite</li>
+  <li>Google OAuth login</li>
   <li>Automatic logout on password change</li>
 </ul>
 
-<h3>Roles &amp; Permissions</h3>
+<h3> Roles & Permissions (RBAC)</h3>
 <ul>
-  <li><code>admin</code> — full access to users and tickets</li>
-  <li><code>agent</code> — manage assigned tickets</li>
-  <li><code>user</code> — create and track personal tickets</li>
+  <li><strong>Admin</strong> → full system control</li>
+  <li><strong>Agent</strong> → manage assigned tickets</li>
+  <li><strong>User</strong> → create and track tickets</li>
 </ul>
 
-<h3>Tickets</h3>
+<h3> Ticket System</h3>
 <ul>
-  <li>Create, view, update, and delete tickets</li>
+  <li>Create, update, delete tickets</li>
   <li>Assign tickets to agents</li>
   <li>Change ticket status</li>
-  <li>Filter tickets by status, assignment, and ownership</li>
-  <li>Search functionality</li>
+  <li>Search & filter tickets</li>
 </ul>
 
-<h3>Comments</h3>
+<h3> Comments</h3>
 <ul>
   <li>Add comments to tickets</li>
-  <li>Comments disabled for closed or resolved tickets</li>
+  <li>Auto-disable on closed tickets</li>
 </ul>
 
-<h3>Dashboard</h3>
+<h3> Dashboard</h3>
 <ul>
-  <li>Ticket statistics overview</li>
+  <li>Ticket statistics</li>
   <li>Role-based data access</li>
 </ul>
 
-<h3>Account Settings</h3>
+<h3>⚙️ Account Settings</h3>
 <ul>
-  <li>Change password with validation and email notification</li>
-  <li>Change email with re-verification flow</li>
+  <li>Change password (with validation)</li>
+  <li>Change email (with re-verification)</li>
   <li>Password strength indicator</li>
 </ul>
 
-<h3>OAuth</h3>
+<h3> Audit Log System</h3>
 <ul>
-  <li>Login and registration with Google</li>
-  <li>Seamless SPA authentication flow</li>
+  <li>Track login (email & Google)</li>
+  <li>Track logout</li>
+  <li>Track failed login attempts</li>
+  <li>Track admin actions</li>
+  <li>Store IP, user agent and metadata</li>
 </ul>
 
-<h3>UI / UX</h3>
-<ul>
-  <li>Responsive design with Tailwind CSS</li>
-  <li>Clean SPA navigation</li>
-  <li>Modern SaaS-style interface</li>
-</ul>
+---
 
-<hr>
-
-<h2>Tech Stack</h2>
+<h2> Tech Stack</h2>
 
 <h3>Backend</h3>
 <ul>
   <li>Laravel</li>
-  <li>Laravel Sanctum (API Authentication)</li>
+  <li>Laravel Sanctum</li>
   <li>Laravel Socialite (Google OAuth)</li>
   <li>MySQL</li>
 </ul>
@@ -107,156 +93,127 @@
   <li>Tailwind CSS</li>
 </ul>
 
-<hr>
+---
 
-<h2>Project Structure</h2>
+<h2>📁 Project Structure</h2>
 
-<pre><code>ticket-system/
+<pre>
+ticket-system/
 ├── backend/     # Laravel API
 └── frontend/    # Vue SPA
-</code></pre>
+</pre>
 
-<hr>
+---
 
-<h2>Installation</h2>
+<h2>⚙️ Installation</h2>
 
-<h3>1. Clone the repository</h3>
+<h3>1. Clone repository</h3>
 
-<pre><code>git clone https://github.com/aitsu01/ticket-system.git
+<pre>
+git clone https://github.com/aitsu01/ticket-system.git
 cd ticket-system
-</code></pre>
+</pre>
+
+---
 
 <h3>2. Backend setup</h3>
 
-<pre><code>cd backend
+<pre>
+cd backend
 composer install
 cp .env.example .env
 php artisan key:generate
-</code></pre>
+</pre>
 
-<p>Configure your <code>.env</code> file with:</p>
+<p>Configure your <code>.env</code> (DB + MAIL + GOOGLE)</p>
 
-<ul>
-  <li>Database credentials</li>
-  <li>Mail configuration</li>
-  <li>Google OAuth credentials</li>
-</ul>
-
-<h3>Google OAuth Setup</h3>
-
-<p>Add the following variables to your <code>.env</code> file:</p>
-
-<pre><code>GOOGLE_CLIENT_ID=your_client_id
-GOOGLE_CLIENT_SECRET=your_client_secret
-GOOGLE_REDIRECT_URI=http://127.0.0.1:8000/api/v1/auth/google/callback
-</code></pre>
-
-<p>Run the backend:</p>
-
-<pre><code>php artisan migrate
+<pre>
+php artisan migrate
 php artisan db:seed
 php artisan serve
-</code></pre>
+</pre>
 
-<p>Backend runs on:</p>
+<p><strong>Backend:</strong> http://127.0.0.1:8000</p>
 
-<pre><code>http://127.0.0.1:8000
-</code></pre>
+---
 
 <h3>3. Frontend setup</h3>
 
-<pre><code>cd frontend
+<pre>
+cd frontend
 npm install
 npm run dev
-</code></pre>
+</pre>
 
-<p>Frontend runs on:</p>
+<p><strong>Frontend:</strong> http://localhost:5173</p>
 
-<pre><code>http://localhost:5173
-</code></pre>
+---
 
-<hr>
+<h2> Google OAuth Setup</h2>
 
-- Audit log system (user activity tracking)
-- Google OAuth login (Socialite)
+<p>Configure in <code>.env</code>:</p>
 
-##  Audit Log System
+<pre>
+GOOGLE_CLIENT_ID=your_client_id
+GOOGLE_CLIENT_SECRET=your_secret
+GOOGLE_REDIRECT_URI=http://127.0.0.1:8000/api/v1/auth/google/callback
+</pre>
 
-The application includes a full audit logging system that tracks user activity:
+---
 
-- Login (email and Google OAuth)
-- Logout
-- Failed login attempts
-- Account registration
-- Admin actions (role updates, user management)
-
-Each log stores:
-- User info (name + email)
-- IP address
-- User agent
-- Metadata (login method, etc.)
-
-This feature improves security, debugging, and system monitoring.
-
-<h2>API Overview</h2>
-
-<h3>Auth</h3>
-<ul>
-  <li><code>POST /register</code></li>
-  <li><code>POST /login</code></li>
-  <li><code>POST /logout</code></li>
-  <li><code>GET /me</code></li>
-</ul>
-
-<h3>OAuth</h3>
-<ul>
-  <li><code>GET /auth/google/redirect</code></li>
-  <li><code>GET /auth/google/callback</code></li>
-</ul>
-
-<h3>Password</h3>
-<ul>
-  <li><code>POST /forgot-password</code></li>
-  <li><code>POST /reset-password</code></li>
-</ul>
-
-<h3>Tickets</h3>
-<ul>
-  <li><code>GET /tickets</code></li>
-  <li><code>POST /tickets</code></li>
-  <li><code>GET /tickets/{id}</code></li>
-  <li><code>DELETE /tickets/{id}</code></li>
-  <li><code>PATCH /tickets/{id}/status</code></li>
-  <li><code>PATCH /tickets/{id}/assign</code></li>
-</ul>
-
-<h3>Comments</h3>
-<ul>
-  <li><code>POST /tickets/{id}/comments</code></li>
-</ul>
-
-<h3>Dashboard</h3>
-<ul>
-  <li><code>GET /dashboard</code></li>
-</ul>
-
-<h3>Users (Admin)</h3>
-<ul>
-  <li><code>GET /users</code></li>
-  <li><code>PATCH /users/{id}/role</code></li>
-  <li><code>PATCH /users/{id}/toggle-active</code></li>
-</ul>
-
-<hr>
-
-<h2>What I Practiced</h2>
+<h2> API Overview</h2>
 
 <ul>
-  <li>Building REST APIs with Laravel</li>
-  <li>Authentication with Sanctum and OAuth</li>
-  <li>Role-based access control (RBAC)</li>
-  <li>SPA architecture with Vue 3</li>
-  <li>State management and API handling</li>
-  <li>Form validation and UX improvements</li>
-  <li>Secure account management flows</li>
+  <li>POST /register</li>
+  <li>POST /login</li>
+  <li>POST /logout</li>
+  <li>GET /me</li>
+  <li>GET /audit-logs</li>
+  <li>GET /tickets</li>
+  <li>PATCH /tickets/{id}/status</li>
+  <li>PATCH /users/{id}/role</li>
 </ul>
+
+---
+
+<h2> What I Practiced</h2>
+
+<ul>
+  <li>REST API design with Laravel</li>
+  <li>Authentication with Sanctum & OAuth</li>
+  <li>Role-based access control</li>
+  <li>SPA architecture with Vue</li>
+  <li>Advanced UI with Tailwind</li>
+  <li>Security and audit logging</li>
+</ul>
+
+---
+
+<h2> Current Limitations</h2>
+
+<ul>
+  <li>No automated tests</li>
+  <li>Pagination improvements needed</li>
+  <li>Notifications not implemented</li>
+  <li>Some configs still hardcoded</li>
+</ul>
+
+---
+
+<h2> Future Improvements</h2>
+
+<ul>
+  <li>Notifications system</li>
+  <li>Audit log filters & analytics</li>
+  <li>User avatars (Google integration)</li>
+  <li>Dark mode</li>
+  <li>Security alerts</li>
+</ul>
+
+---
+
+<h2 align="center"> Author</h2>
+
+<p align="center">
+Portfolio project built to demonstrate full-stack development skills using Laravel and Vue.
+</p>
