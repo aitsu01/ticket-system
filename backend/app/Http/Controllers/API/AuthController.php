@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\RateLimiter;
 use App\Helpers\Audit;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeMail;
 
 
 class AuthController extends Controller
@@ -38,6 +40,8 @@ class AuthController extends Controller
 
         //  Email verifica
         $user->sendEmailVerificationNotification();
+
+        
 
         //  AUDIT
         Audit::log($user, 'register', [

@@ -17,6 +17,8 @@
         <option value="logout">Logout</option>
         <option value="login_failed">Login Failed</option>
         <option value="register">Register</option>
+        <option value="ticket_created">ticket created</option>
+
       </select>
 
     </div>

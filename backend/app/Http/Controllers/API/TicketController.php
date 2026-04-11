@@ -11,6 +11,10 @@ use App\Http\Requests\StoreTicketRequest;
 use App\Http\Requests\UpdateTicketRequest;
 
 use App\Http\Resources\TicketResource;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\TicketCreatedMail;
+use App\Helpers\Audit;
+use App\Models\User;
 
 class TicketController extends Controller
 {
@@ -25,10 +29,7 @@ class TicketController extends Controller
 {
     $query = Ticket::query()->with(['user', 'agent']);
 
-    //  SEARCH
-    /*if ($request->search) {
-        $query->where('title', 'like', '%' . $request->search . '%');
-    }*/
+    
 
     if ($request->filled('search')) {
 
@@ -74,20 +75,64 @@ class TicketController extends Controller
     return TicketResource::collection($tickets);
 }
 
-    public function store(StoreTicketRequest $request)
+   
+
+
+
+
+public function store(Request $request)
 {
-    $data = $request->validated();
+    $request->validate([
+        'title' => 'required',
+        'description' => 'required',
+        'priority' => 'required'
+    ]);
 
-    $data['user_id'] = auth()->id();
+    $ticket = Ticket::create([
+        'title' => $request->title,
+        'description' => $request->description,
+        'priority' => $request->priority,
+        'user_id' => auth()->id(),
+        'status' => 'open'
+    ]);
 
-    $ticket = $this->service->create($data);
+    // 🔥 recupera utente corrente (più sicuro)
+    $user = auth()->user();
 
-    /*return response()->json($ticket, 201);*/
-    return new TicketResource($ticket);
+    // ========================
+    // EMAIL USER
+    // ========================
+    Mail::to($user->email)
+        ->queue(new TicketCreatedMail($ticket));
+
+    // ========================
+    // EMAIL ADMIN
+    // ========================
+    $admins = User::where('role', 'admin')
+        ->where('is_active', true)
+        ->get();
+
+    foreach ($admins as $admin) {
+
+        // 🚫 evita mandare email a se stesso
+        if ($admin->id === $user->id) continue;
+
+        Mail::to($admin->email)
+            ->queue(new TicketCreatedMail($ticket));
+    }
+
+    // ========================
+    // AUDIT
+    // ========================
+    Audit::log($user, 'ticket_created', [
+        'ticket_id' => $ticket->id
+    ]);
+
+    return response()->json([
+        'message' => 'Ticket created successfully',
+        'data' => $ticket
+    ]);
 }
-
-
-
 
 
 

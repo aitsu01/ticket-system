@@ -10,6 +10,7 @@ use App\Http\Controllers\API\UserController;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\PasswordChangedMail;
 use App\Mail\PasswordResetSuccessMail;
+use App\Mail\WelcomeMail;
 
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -25,6 +26,7 @@ use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Auth;
 
 use App\Helpers\Audit;
+
 
 
 
@@ -84,25 +86,35 @@ Route::get('/auth/google/callback', function () {
 });
 
     // EMAIL VERIFY
-    Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
 
-        $user = User::findOrFail($id);
 
-        if (!hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
-            return response()->json(['message' => 'Invalid verification link'], 403);
-        }
+Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
 
-        if (!URL::hasValidSignature($request)) {
-            return response()->json(['message' => 'Invalid or expired link'], 403);
-        }
+    $user = User::findOrFail($id);
 
-        if (!$user->hasVerifiedEmail()) {
-            $user->markEmailAsVerified();
-        }
+    if (!hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+        return response()->json(['message' => 'Invalid verification link'], 403);
+    }
 
-        return redirect('http://localhost:5173/email-verified');
+    if (!URL::hasValidSignature($request)) {
+        return response()->json(['message' => 'Invalid or expired link'], 403);
+    }
 
-    })->middleware('signed')->name('verification.verify');
+    //  SOLO SE NON ERA GIÀ VERIFICATO
+    if (!$user->hasVerifiedEmail()) {
+
+        $user->markEmailAsVerified();
+
+        //  INVIO WELCOME QUI
+        Mail::to($user->email)->send(new WelcomeMail($user));
+
+        //  AUDIT
+        \App\Helpers\Audit::log($user, 'email_verified');
+    }
+
+    return redirect('http://localhost:5173/email-verified');
+
+})->middleware('signed')->name('verification.verify');
 
 
     // RESEND VERIFICATION
@@ -126,6 +138,7 @@ Route::get('/auth/google/callback', function () {
 
         return response()->json(['message' => 'Verification email sent']);
     });
+
 
 
     // PASSWORD RESET REQUEST

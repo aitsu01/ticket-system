@@ -208,22 +208,28 @@ const fetchTicket = async () => {
 };
 
 //  FETCH USER (ROLE)
+
 const fetchUser = async () => {
   const res = await api.get("/me");
   isAdmin.value = res.data.role === "admin";
 };
 
-//  FETCH USERS
-const fetchUsers = async () => {
-  const res = await api.get("/users");
-  users.value = res.data;
-};
 
-onMounted(() => {
-  fetchTicket();
-  fetchUsers();
-  fetchUser();
+
+//  FETCH USERS
+onMounted(async () => {
+
+  await fetchUser();     // 👈 prima capisci il ruolo
+  await fetchTicket();
+
+  // 🔥 SOLO ADMIN
+  if (isAdmin.value) {
+    await fetchUsers();
+  }
+
 });
+
+
 
 //  ADD COMMENT
 const addComment = async () => {
