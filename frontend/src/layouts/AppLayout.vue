@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-100">
 
-    <!-- 🔝 NAVBAR -->
+    <!--  NAVBAR -->
     <div class="bg-white shadow px-6 py-4 flex justify-between items-center">
 
       <!-- LEFT -->
@@ -24,7 +24,20 @@
         >
           Users
         </router-link>
+
+        <router-link
+  v-if="user?.role === 'admin'"
+  to="/app/admin/audit-logs"
+  class="text-gray-600 hover:text-black"
+>
+  Audit Logs
+</router-link>
+
+
       </div>
+
+      
+
 
       <!-- RIGHT -->
       <div class="flex items-center gap-4">

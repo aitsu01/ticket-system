@@ -177,6 +177,27 @@ npm run dev
 
 <hr>
 
+- Audit log system (user activity tracking)
+- Google OAuth login (Socialite)
+
+##  Audit Log System
+
+The application includes a full audit logging system that tracks user activity:
+
+- Login (email and Google OAuth)
+- Logout
+- Failed login attempts
+- Account registration
+- Admin actions (role updates, user management)
+
+Each log stores:
+- User info (name + email)
+- IP address
+- User agent
+- Metadata (login method, etc.)
+
+This feature improves security, debugging, and system monitoring.
+
 <h2>API Overview</h2>
 
 <h3>Auth</h3>

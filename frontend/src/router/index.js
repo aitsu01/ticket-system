@@ -11,6 +11,9 @@ import EmailVerified from "../views/EmailVerified.vue";
 import Home from "../views/Home.vue";
 import OAuthSuccess from "../views/OAuthSuccess.vue";
 
+
+
+
 // =======================
 // ACCOUNT
 // =======================
@@ -40,14 +43,14 @@ const routes = [
   { path: "/reset-password", component: ResetPassword },
   { path: "/email-verified", component: EmailVerified },
 
-  // 🔥 OAUTH (DEVE ESSERE PUBLIC)
+  //  OAUTH (DEVE ESSERE PUBLIC)
   { path: "/oauth-success", component: OAuthSuccess },
 
   // =======================
   // PROTECTED ROUTES
   // =======================
   {
-    path: "/app", // 🔥 cambio path per evitare conflitti
+    path: "/app", //  cambio path per evitare conflitti
     component: AppLayout,
     meta: { requiresAuth: true },
     children: [
@@ -57,6 +60,7 @@ const routes = [
       { path: "tickets/:id", component: TicketDetail },
       { path: "account", component: Account },
       { path: "admin/users", component: () => import("../views/AdminUsers.vue") },
+      { path: "admin/audit-logs", component: () => import("../views/AdminAudit.vue") },
     ],
   },
 
@@ -77,12 +81,12 @@ const router = createRouter({
 router.beforeEach((to) => {
   const token = localStorage.getItem("token");
 
-  // 🔒 PROTECTED
+  //  PROTECTED
   if (to.meta.requiresAuth && !token) {
     return "/login";
   }
 
-  // 🔁 GIÀ LOGGATO
+  //  GIÀ LOGGATO
   if (token && ["/login", "/register"].includes(to.path)) {
     return "/app/dashboard";
   }

@@ -6,12 +6,15 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\RateLimiter;
+use App\Helpers\Audit;
+
 
 class AuthController extends Controller
 {
-    //  REGISTER
+    // ========================
+    // REGISTER
+    // ========================
     public function register(Request $request)
     {
         $request->validate([
@@ -20,10 +23,10 @@ class AuthController extends Controller
             'password' => [
                 'required',
                 'min:8',
-                'regex:/[A-Z]/',     // uppercase
-                'regex:/[a-z]/',     // lowercase
-                'regex:/[0-9]/',     // number
-                'regex:/[\W_]/'      // special char
+                'regex:/[A-Z]/',
+                'regex:/[a-z]/',
+                'regex:/[0-9]/',
+                'regex:/[\W_]/'
             ]
         ]);
 
@@ -36,12 +39,19 @@ class AuthController extends Controller
         //  email verifica
         $user->sendEmailVerificationNotification();
 
+        //  AUDIT
+        Audit::log($user, 'register', [
+            'email' => $user->email
+        ]);
+
         return response()->json([
             'message' => 'Registered successfully. Please verify your email.'
         ], 201);
     }
 
-    //  LOGIN (PRO)
+    // ========================
+    // LOGIN
+    // ========================
     public function login(Request $request)
     {
         $request->validate([
@@ -49,10 +59,15 @@ class AuthController extends Controller
             'password' => 'required'
         ]);
 
-        //  RATE LIMIT (anti brute force)
         $key = 'login:' . $request->ip();
 
+        //  RATE LIMIT
         if (RateLimiter::tooManyAttempts($key, 5)) {
+
+            Audit::log(null, 'login_blocked', [
+                'email' => $request->email
+            ]);
+
             return response()->json([
                 'message' => 'Too many attempts. Try again later.'
             ], 429);
@@ -60,31 +75,45 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        //  credenziali errate
+        //  WRONG CREDENTIALS
         if (!$user || !Hash::check($request->password, $user->password)) {
 
-            RateLimiter::hit($key, 60); // blocca 60 sec
+            RateLimiter::hit($key, 60);
+
+            Audit::log($user, 'login_failed', [
+                'email' => $request->email
+            ]);
 
             return response()->json([
                 'message' => 'Invalid email or password'
             ], 401);
         }
 
-        //  utente disattivato
+        //  ACCOUNT DISABLED
         if (isset($user->is_active) && !$user->is_active) {
+
+            Audit::log($user, 'login_blocked_disabled');
+
             return response()->json([
                 'message' => 'Account disabled. Contact support.'
             ], 403);
         }
 
-        //  email non verificata
+        //  EMAIL NOT VERIFIED
         if (!$user->hasVerifiedEmail()) {
+
+            Audit::log($user, 'login_blocked_unverified');
+
             return response()->json([
                 'message' => 'Email not verified'
             ], 403);
         }
 
-        //  reset tentativi
+        //  SUCCESS LOGIN
+        Audit::log($user, 'login', [
+            'method' => 'email'
+        ]);
+
         RateLimiter::clear($key);
 
         $token = $user->createToken('api_token')->plainTextToken;
@@ -95,17 +124,28 @@ class AuthController extends Controller
         ]);
     }
 
-    //  LOGOUT
+    // ========================
+    // LOGOUT
+    // ========================
     public function logout(Request $request)
-    {
-        $request->user()->currentAccessToken()->delete();
+{
+    $user = $request->user();
 
-        return response()->json([
-            'message' => 'Logged out'
-        ]);
+    //  controlla se token esiste
+    if ($user && $request->user()->currentAccessToken()) {
+
+        Audit::log($user, 'logout');
+
+        $request->user()->currentAccessToken()->delete();
     }
 
-    //  ME
+    return response()->json([
+        'message' => 'Logged out'
+    ]);
+}
+    // ========================
+    // ME
+    // ========================
     public function me(Request $request)
     {
         return response()->json($request->user());

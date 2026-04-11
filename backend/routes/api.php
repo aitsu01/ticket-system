@@ -24,6 +24,10 @@ use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Auth;
 
+use App\Helpers\Audit;
+
+
+
 
 
 
@@ -49,6 +53,7 @@ Route::get('/auth/google/callback', function () {
 
     $user = User::where('email', $googleUser->getEmail())->first();
 
+    //  NUOVO UTENTE
     if (!$user) {
         $user = User::create([
             'name' => $googleUser->getName(),
@@ -56,14 +61,27 @@ Route::get('/auth/google/callback', function () {
             'password' => bcrypt(Str::random(16)),
             'email_verified_at' => now()
         ]);
+
+        //  AUDIT REGISTER GOOGLE
+        /*Audit::log($user, 'register', [
+            'method' => 'google'
+        ]);*/
+        Audit::log($user, 'login', [
+    'method' => 'google',
+    'google_id' => $googleUser->getId(),
+    'avatar' => $googleUser->getAvatar()
+]);
     }
+
+    //  AUDIT LOGIN GOOGLE
+    Audit::log($user, 'login', [
+        'method' => 'google'
+    ]);
 
     $token = $user->createToken('api_token')->plainTextToken;
 
-    // redirect frontend con token
     return redirect("http://localhost:5173/oauth-success?token={$token}");
 });
-
 
     // EMAIL VERIFY
     Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
@@ -179,6 +197,14 @@ Route::get('/auth/google/callback', function () {
 
         Route::patch('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])
             ->middleware('role:admin');
+
+        Route::get('/audit-logs', function () {
+    
+    return \App\Models\AuditLog::with('user')
+    ->latest()
+    ->take(100)
+    ->get();
+})->middleware('role:admin');
 
 
         // =========================
